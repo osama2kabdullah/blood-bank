@@ -1,16 +1,18 @@
 import { verifyToken, generateToken } from "../utils/token.js";
 import { hashPassword, verifyPassword } from "../utils/hash.js";
 
-// ---- ROUTES ----
+// ---- ROUTES ---- (must be declared before any route assignment)
 const routes = {};
 
 // ---- CORS HELPER ----
-function corsHeaders(origin, allowedOrigin) {
-  if (origin !== allowedOrigin) return {};
+function getCorsHeaders(origin, allowedOrigin) {
+  if (!origin || origin !== allowedOrigin) return {};
   return {
     "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
+    "Access-Control-Allow-Methods": "POST, GET, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization", // Fix #2
+    "Access-Control-Max-Age": "86400",
+    "Vary": "Origin"
   };
 }
 
@@ -20,8 +22,15 @@ export default {
     const origin = request.headers.get("Origin") || "";
     const allowedOrigin = env.ALLOWED_ORIGIN || "";
 
+    // Handle preflight
     if (request.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders(origin, allowedOrigin) });
+      if (origin !== allowedOrigin) {
+        return new Response("Forbidden", { status: 403 });
+      }
+      return new Response(null, {
+        status: 204,
+        headers: getCorsHeaders(origin, allowedOrigin)
+      });
     }
 
     const url = new URL(request.url);
@@ -32,11 +41,14 @@ export default {
     }
 
     try {
-      const response = await handler(request, env, ctx);
-      const headers = new Headers(response.headers);
-      const cors = corsHeaders(origin, allowedOrigin);
-      for (const key in cors) headers.set(key, cors[key]);
-      return jsonResponse(await response.json(), response.status, headers);
+      // Pass origin + allowedOrigin into every handler via request context
+      const response = await handler(request, env, ctx, origin, allowedOrigin);
+      const corsHdrs = getCorsHeaders(origin, allowedOrigin);
+      const headers = new Headers({ "Content-Type": "application/json", ...corsHdrs });
+      return new Response(JSON.stringify(await response.json()), {
+        status: response.status,
+        headers
+      });
     } catch (err) {
       return jsonError("Internal Worker error", 500, origin, allowedOrigin, err.message);
     }
@@ -44,40 +56,44 @@ export default {
 };
 
 // ---- HELPERS ----
-function jsonResponse(payload, status = 200) {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { "Content-Type": "application/json" }
-  });
+function jsonResponse(payload, status = 200, extraHeaders = {}) {
+  const headers = new Headers({ "Content-Type": "application/json", ...extraHeaders });
+  return new Response(JSON.stringify(payload), { status, headers });
 }
 
+// Fix #3: origin/allowedOrigin always passed properly at call sites
 function jsonError(message, status = 500, origin = "", allowedOrigin = "", details = null) {
   const payload = { status: "error", message };
   if (details) payload.details = details;
-  const headers = new Headers({ "Content-Type": "application/json", ...corsHeaders(origin, allowedOrigin) });
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    ...getCorsHeaders(origin, allowedOrigin)
+  });
   return new Response(JSON.stringify(payload), { status, headers });
 }
 
 // ---- HEALTH ENDPOINT ----
 routes["/"] = healthHandler;
-function healthHandler() {
+function healthHandler(request, env, ctx, origin, allowedOrigin) {
   return jsonResponse({ status: "ok", message: "Worker running" });
 }
 
+// ---- DONORS LIST ----
 routes["/donors"] = donorsHandler;
-async function donorsHandler(request, env) {
+async function donorsHandler(request, env, ctx, origin, allowedOrigin) {
   const url = new URL(request.url);
-  let blood = url.searchParams.get("blood_group")?.trim().toUpperCase();
+
+  // Fix #5: normalize blood group cleanly before any logic
+  let blood = url.searchParams.get("blood_group")?.trim().toUpperCase().replace(/\s+/g, "") || "";
   const location = url.searchParams.get("location")?.trim();
-  const page = parseInt(url.searchParams.get("page") || "1");
+  const page = Math.max(1, parseInt(url.searchParams.get("page") || "1"));
   const limit = 10;
   const offset = (page - 1) * limit;
 
-  // Auto-add '+' if no sign
+  // Auto-add '+' only if no sign present
   if (blood && !blood.endsWith("+") && !blood.endsWith("-")) {
     blood = blood + "+";
   }
-  blood = blood?.replace(/ /g, "+");
 
   let query = "SELECT * FROM donors WHERE 1=1";
   const params = [];
@@ -97,83 +113,70 @@ async function donorsHandler(request, env) {
 
   try {
     const { results } = await env.DB.prepare(query).bind(...params).all();
-
-    return jsonResponse({
-      page,
-      limit,
-      data: results
-    });
+    return jsonResponse({ page, limit, data: results });
   } catch (err) {
-    return jsonError("Failed to fetch donors", 500, "", "", err.message);
+    return jsonError("Failed to fetch donors", 500, origin, allowedOrigin, err.message); // Fix #3
   }
 }
 
+// ---- REGISTER ----
 routes["/auth/donor/register"] = registerHandler;
-async function registerHandler(request, env) {
-  if (request.method !== "POST") return jsonError("Method not allowed", 405);
+async function registerHandler(request, env, ctx, origin, allowedOrigin) {
+  if (request.method !== "POST") return jsonError("Method not allowed", 405, origin, allowedOrigin);
 
   try {
     const body = await request.json();
     const { name, phone, password } = body;
 
     if (!name || !phone || !password) {
-      return jsonError("Missing required fields", 400);
+      return jsonError("Missing required fields", 400, origin, allowedOrigin);
     }
 
     const hashedPassword = await hashPassword(password);
 
     const result = await env.DB.prepare(`
-      INSERT INTO users (name, phone, password)
-      VALUES (?, ?, ?)
+      INSERT INTO users (name, phone, password) VALUES (?, ?, ?)
     `).bind(name, phone, hashedPassword).run();
 
     const newUserId = result.meta.last_row_id;
 
-    // Auto-claim donor if exists
     await env.DB.prepare(`
-      UPDATE donors
-      SET claimed_by_user_id = ?
-      WHERE phone = ?
+      UPDATE donors SET claimed_by_user_id = ? WHERE phone = ?
     `).bind(newUserId, phone).run();
 
-    return jsonResponse({
-      success: true,
-      message: "User registered successfully"
-    });
+    return jsonResponse({ success: true, message: "User registered successfully" });
 
   } catch (err) {
     if (err.message.includes("UNIQUE")) {
-      return jsonError("Phone already registered", 400);
+      return jsonError("Phone already registered", 400, origin, allowedOrigin);
     }
-
-    return jsonError("Registration failed", 500, "", "", err.message);
+    return jsonError("Registration failed", 500, origin, allowedOrigin, err.message);
   }
 }
 
+// ---- LOGIN ----
 routes["/auth/donor/login"] = loginHandler;
-async function loginHandler(request, env) {
-  try {
-    if (request.method !== "POST") {
-      return jsonError("Method not allowed", 405);
-    }
+async function loginHandler(request, env, ctx, origin, allowedOrigin) {
+  if (request.method !== "POST") {
+    return jsonError("Method not allowed", 405, origin, allowedOrigin);
+  }
 
+  try {
     const body = await request.json();
     const { phone, password } = body;
 
     if (!phone || !password) {
-      return jsonError("Phone and password required", 400);
+      return jsonError("Phone and password required", 400, origin, allowedOrigin);
     }
 
     const user = await env.DB.prepare(
       "SELECT * FROM users WHERE phone = ?"
     ).bind(phone).first();
 
-    if (!user) {
-      return jsonError("User not found", 404);
-    }
+    if (!user) return jsonError("User not found", 404, origin, allowedOrigin);
 
     const isValid = await verifyPassword(password, user.password);
-    if (!isValid) return jsonError("Invalid credentials", 401);
+    if (!isValid) return jsonError("Invalid credentials", 401, origin, allowedOrigin);
 
     const token = await generateToken(
       { userId: user.id, phone: user.phone },
@@ -195,100 +198,94 @@ async function loginHandler(request, env) {
     });
 
   } catch (err) {
-    return jsonError("Login failed", 500, "", "", err.message);
+    return jsonError("Login failed", 500, origin, allowedOrigin, err.message);
   }
 }
 
+// ---- EDIT DONOR ----
 routes["/donors/edit"] = editDonorHandler;
-async function editDonorHandler(request, env) {
-  if (request.method !== "PUT") return jsonError("Method not allowed", 405);
+async function editDonorHandler(request, env, ctx, origin, allowedOrigin) {
+  if (request.method !== "PUT") return jsonError("Method not allowed", 405, origin, allowedOrigin);
 
-  // Auth token
   const authHeader = request.headers.get("Authorization") || "";
   const token = authHeader.replace("Bearer ", "");
   const userData = await verifyToken(token, env.JWT_SECRET);
-  if (!userData) return jsonError("Unauthorized", 401);
+  if (!userData) return jsonError("Unauthorized", 401, origin, allowedOrigin);
 
   try {
     const body = await request.json();
     const { donor_id, name, phone, blood_group, location, last_donation } = body;
 
-    if (!donor_id) return jsonError("donor_id is required", 400);
+    if (!donor_id) return jsonError("donor_id is required", 400, origin, allowedOrigin);
 
-    // Fetch donor
     const donor = await env.DB.prepare(
       "SELECT * FROM donors WHERE id = ?"
     ).bind(donor_id).first();
 
-    if (!donor) return jsonError("Donor not found", 404);
+    if (!donor) return jsonError("Donor not found", 404, origin, allowedOrigin);
 
-    // Check ownership
+    // Fix #4: coerce both sides to Number for safe comparison
     if (donor.claimed_by_user_id) {
-      if (donor.claimed_by_user_id !== userData.userId)
-        return jsonError("You cannot edit this claimed donor", 403);
+      if (Number(donor.claimed_by_user_id) !== Number(userData.userId))
+        return jsonError("You cannot edit this claimed donor", 403, origin, allowedOrigin);
     } else {
-      if (donor.added_by_user_id !== userData.userId)
-        return jsonError("You cannot edit this donor", 403);
+      if (Number(donor.added_by_user_id) !== Number(userData.userId))
+        return jsonError("You cannot edit this donor", 403, origin, allowedOrigin);
     }
 
-    // If phone is being updated, check uniqueness
     if (phone && phone !== donor.phone) {
       const existing = await env.DB.prepare(
         "SELECT id FROM donors WHERE phone = ?"
       ).bind(phone).first();
-
-      if (existing) return jsonError("Donor with this phone already exists", 400);
+      if (existing) return jsonError("Donor with this phone already exists", 400, origin, allowedOrigin);
     }
 
-    // Build update query dynamically
     const updates = [];
     const params = [];
 
-    if (name !== undefined) { updates.push("name = ?"); params.push(name); }
-    if (phone !== undefined) { updates.push("phone = ?"); params.push(phone); }
-    if (blood_group !== undefined) { updates.push("blood_group = ?"); params.push(blood_group.toUpperCase()); }
-    if (location !== undefined) { updates.push("location = ?"); params.push(location); }
+    if (name !== undefined)          { updates.push("name = ?");          params.push(name); }
+    if (phone !== undefined)         { updates.push("phone = ?");         params.push(phone); }
+    if (blood_group !== undefined)   { updates.push("blood_group = ?");   params.push(blood_group.toUpperCase()); }
+    if (location !== undefined)      { updates.push("location = ?");      params.push(location); }
     if (last_donation !== undefined) { updates.push("last_donation = ?"); params.push(last_donation); }
 
-    if (updates.length === 0) return jsonError("No fields to update", 400);
+    if (updates.length === 0) return jsonError("No fields to update", 400, origin, allowedOrigin);
 
     const updateQuery = `UPDATE donors SET ${updates.join(", ")} WHERE id = ?`;
     params.push(donor_id);
 
     await env.DB.prepare(updateQuery).bind(...params).run();
 
-    return jsonResponse({
-      success: true,
-      message: "Donor updated successfully"
-    });
+    return jsonResponse({ success: true, message: "Donor updated successfully" });
 
   } catch (err) {
-    return jsonError("Failed to update donor", 500, "", "", err.message);
+    return jsonError("Failed to update donor", 500, origin, allowedOrigin, err.message);
   }
 }
 
+// ---- ADD DONOR ----
 routes["/donors/add"] = addDonorHandler;
-async function addDonorHandler(request, env) {
-  if (request.method !== "POST") return jsonError("Method not allowed", 405);
+async function addDonorHandler(request, env, ctx, origin, allowedOrigin) {
+  if (request.method !== "POST") return jsonError("Method not allowed", 405, origin, allowedOrigin);
 
   const authHeader = request.headers.get("Authorization") || "";
   const token = authHeader.replace("Bearer ", "");
   const userData = await verifyToken(token, env.JWT_SECRET);
-  if (!userData) return jsonError("Unauthorized", 401);
+  if (!userData) return jsonError("Unauthorized", 401, origin, allowedOrigin);
 
   try {
     const body = await request.json();
     const { name, phone, blood_group, location, last_donation } = body;
 
     if (!phone || !blood_group || !location) {
-      return jsonError("Missing required fields", 400);
+      return jsonError("Missing required fields", 400, origin, allowedOrigin);
     }
 
-    const existing = await env.DB.prepare(`
-      SELECT id FROM donors WHERE phone = ?
-    `).bind(phone).first();
+    const existing = await env.DB.prepare(
+      "SELECT id FROM donors WHERE phone = ?"
+    ).bind(phone).first();
 
-    if (existing) return jsonError("Donor with this phone already exists", 400);
+    if (existing) return jsonError("Donor with this phone already exists", 400, origin, allowedOrigin);
 
     await env.DB.prepare(`
       INSERT INTO donors (name, phone, blood_group, location, last_donation, added_by_user_id)
@@ -302,25 +299,22 @@ async function addDonorHandler(request, env) {
       userData.userId
     ).run();
 
-    return jsonResponse({
-      success: true,
-      message: "Donor added successfully"
-    });
+    return jsonResponse({ success: true, message: "Donor added successfully" });
 
   } catch (err) {
-    return jsonError("Failed to add donor", 500, "", "", err.message);
+    return jsonError("Failed to add donor", 500, origin, allowedOrigin, err.message);
   }
 }
 
+// ---- MY DONORS ----
 routes["/my-donors"] = myDonorsHandler;
-async function myDonorsHandler(request, env) {
-  if (request.method !== "GET") return jsonError("Method not allowed", 405);
+async function myDonorsHandler(request, env, ctx, origin, allowedOrigin) {
+  if (request.method !== "GET") return jsonError("Method not allowed", 405, origin, allowedOrigin);
 
-  // Auth token
   const authHeader = request.headers.get("Authorization") || "";
   const token = authHeader.replace("Bearer ", "");
   const userData = await verifyToken(token, env.JWT_SECRET);
-  if (!userData) return jsonError("Unauthorized", 401);
+  if (!userData) return jsonError("Unauthorized", 401, origin, allowedOrigin);
 
   try {
     const { results } = await env.DB.prepare(`
@@ -329,57 +323,49 @@ async function myDonorsHandler(request, env) {
       ORDER BY created_at DESC
     `).bind(userData.userId, userData.userId).all();
 
-    return jsonResponse({
-      success: true,
-      data: results
-    });
+    return jsonResponse({ success: true, data: results });
 
   } catch (err) {
-    return jsonError("Failed to fetch your donors", 500, "", "", err.message);
+    return jsonError("Failed to fetch your donors", 500, origin, allowedOrigin, err.message);
   }
 }
 
+// ---- DELETE DONOR ----
 routes["/donors/delete"] = deleteDonorHandler;
-async function deleteDonorHandler(request, env) {
-  if (request.method !== "DELETE") return jsonError("Method not allowed", 405);
+async function deleteDonorHandler(request, env, ctx, origin, allowedOrigin) {
+  if (request.method !== "DELETE") return jsonError("Method not allowed", 405, origin, allowedOrigin);
 
-  // Auth token
   const authHeader = request.headers.get("Authorization") || "";
   const token = authHeader.replace("Bearer ", "");
   const userData = await verifyToken(token, env.JWT_SECRET);
-  if (!userData) return jsonError("Unauthorized", 401);
+  if (!userData) return jsonError("Unauthorized", 401, origin, allowedOrigin);
 
   try {
     const body = await request.json();
     const { donor_id } = body;
 
-    if (!donor_id) return jsonError("donor_id is required", 400);
+    if (!donor_id) return jsonError("donor_id is required", 400, origin, allowedOrigin);
 
-    // Fetch donor
     const donor = await env.DB.prepare(
       "SELECT * FROM donors WHERE id = ?"
     ).bind(donor_id).first();
 
-    if (!donor) return jsonError("Donor not found", 404);
+    if (!donor) return jsonError("Donor not found", 404, origin, allowedOrigin);
 
-    // Ownership check
+    // Fix #4: coerce both sides to Number for safe comparison
     if (donor.claimed_by_user_id) {
-      if (donor.claimed_by_user_id !== userData.userId)
-        return jsonError("You cannot delete this claimed donor", 403);
+      if (Number(donor.claimed_by_user_id) !== Number(userData.userId))
+        return jsonError("You cannot delete this claimed donor", 403, origin, allowedOrigin);
     } else {
-      if (donor.added_by_user_id !== userData.userId)
-        return jsonError("You cannot delete this donor", 403);
+      if (Number(donor.added_by_user_id) !== Number(userData.userId))
+        return jsonError("You cannot delete this donor", 403, origin, allowedOrigin);
     }
 
-    // Delete donor
     await env.DB.prepare("DELETE FROM donors WHERE id = ?").bind(donor_id).run();
 
-    return jsonResponse({
-      success: true,
-      message: "Donor deleted successfully"
-    });
+    return jsonResponse({ success: true, message: "Donor deleted successfully" });
 
   } catch (err) {
-    return jsonError("Failed to delete donor", 500, "", "", err.message);
+    return jsonError("Failed to delete donor", 500, origin, allowedOrigin, err.message);
   }
 }

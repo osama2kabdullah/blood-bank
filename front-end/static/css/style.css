@@ -342,6 +342,29 @@ footer a {
   box-shadow: 0 15px 40px rgba(25,28,29,0.08);
 }
 
+#locationDropdown {
+  width: 100%;
+  border: 1px solid var(--secondary-container);
+  background: var(--surface-lowest);
+  list-style: none;
+  max-height: 250px;
+  overflow-y: auto;
+  position: absolute;
+  z-index: 1;
+}
+
+#locationDropdown li:hover,
+#locationDropdown li.active {
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+#locationDropdown li {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--outline-variant);
+}
+
 .form-grid {
   display: grid;
   gap: 20px;
