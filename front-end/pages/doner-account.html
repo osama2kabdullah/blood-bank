@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doner Account | Blood Bank Shiromoni</title>
+  <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+  <header>
+    <div class="header-content container">
+      <div class="logo">
+        <img src="../static/images/logo.png" alt="Blood Bank Shiromoni Logo">
+      </div>
+      <div class="header-right-side">
+        <div class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+        </div>
+        <a href="doner-login.html" class="btn-secondary">Sign Out</a>
+        <button class="hamburger-menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+      <div class="mobile-menu" id="mobileMenu">
+        <a href="index.html">Home</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="page-hero">
+    <div class="container">
+      <h1 class="page-title">Doner Account</h1>
+      <p class="page-subtitle">Your personal dashboard shows your donor profile, donation history, and availability status in one place.</p>
+    </div>
+  </section>
+
+  <main class="container">
+    <div class="dashboard-grid">
+      <div class="form-card">
+        <form class="form-grid">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="name">Full Name</label>
+              <input type="text" id="name" name="name" placeholder="ex: Mehedi Hasan" value="Md Abdullah">
+            </div>
+            <div class="form-field">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" placeholder="ex: +880123456789" value="+880123456789">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="bloodGroup">Blood Group</label>
+              <div class="radio-group">
+                <label><input type="radio" name="bloodGroup" value="A+"> A+</label>
+                <label><input type="radio" name="bloodGroup" value="A-"> A-</label>
+                <label><input type="radio" selected name="bloodGroup" value="B+"> B+</label>
+                <label><input type="radio" name="bloodGroup" value="B-"> B-</label>
+                <label><input type="radio" name="bloodGroup" value="AB+"> AB+</label>
+                <label><input type="radio" name="bloodGroup" value="AB-"> AB-</label>
+                <label><input type="radio" name="bloodGroup" value="O+"> O+</label>
+                <label><input type="radio" name="bloodGroup" value="O-"> O-</label>
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="location">Location</label>
+              <input type="text" id="location" name="location" placeholder="Rajshahi, Dhaka, etc." value="Dhaka">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="lastDonation">Last Blood Donation</label>
+
+              <div class="date-input">
+                <input type="date" id="lastDonation" value="2023-01-01">
+
+                <span class="calendar-icon">
+                  📅
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="password">Password</label>
+              <input value="123456" type="password" id="password" name="password" placeholder="Enter password">
+            </div>
+            <div class="form-field">
+              <label for="confirmPassword">Confirm Password</label>
+              <input value="123456" type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>&nbsp;</label>
+              <button type="submit" class="btn-primary">Update Account</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>❤️ Developed by <a href="https://www.linkedin.com/in/md-abdullah-9121b5228/" target="_blank" rel="noopener noreferrer">Osama Abdullah</a></p>
+    </div>
+  </footer>
+
+  <script src="../static/js/script.js"></script>
+</body>
+</html>
