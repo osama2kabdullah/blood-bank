@@ -1,0 +1,11 @@
+name = "blood-bank-api"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "blood_bank_db"
+database_id = "f95e0b42-440f-47ba-a8ca-1ec39535d9b4"
+
+[vars]
+JWT_SECRET = "super_secret_key_change_this"
