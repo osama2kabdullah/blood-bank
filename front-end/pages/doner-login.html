@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="../static/js/auth-guard.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Doner Login | Blood Bank Shiromoni</title>
@@ -17,9 +18,8 @@
       <div class="header-right-side">
         <div class="nav-links">
           <a href="index.html" class="nav-link">Home</a>
-          <a href="doner-login.html" class="nav-link">Login</a>
         </div>
-        <a href="doner-registration.html" class="btn-primary">Doner Registration</a>
+        <a class="action-btn" href=""></a>
         <button class="hamburger-menu">
           <span></span>
           <span></span>
@@ -28,7 +28,6 @@
       </div>
       <div class="mobile-menu" id="mobileMenu">
         <a href="index.html">Home</a>
-        <a href="doner-login.html">Login</a>
       </div>
     </div>
   </header>
@@ -43,7 +42,7 @@
   <main class="container">
     <div class="dashboard-grid">
       <div class="form-card">
-        <form class="form-grid">
+        <form id="loginForm" class="form-grid">
           <div class="form-row">
             <div class="form-field">
               <label for="phone">Phone Number</label>
@@ -73,6 +72,7 @@
     </div>
   </footer>
 
-  <script src="../static/js/script.js"></script>
+  <script defer src="../static/js/script.js"></script>
+  <script defer src="../static/js/auth.js"></script>
 </body>
 </html>

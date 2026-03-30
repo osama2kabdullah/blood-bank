@@ -369,3 +369,80 @@ async function deleteDonorHandler(request, env, ctx, origin, allowedOrigin) {
     return jsonError("Failed to delete donor", 500, origin, allowedOrigin, err.message);
   }
 }
+
+routes["/auth/donor/register-full"] = registerFullHandler;
+async function registerFullHandler(request, env, ctx, origin, allowedOrigin) {
+  if (request.method !== "POST") return jsonError("Method not allowed", 405, origin, allowedOrigin);
+
+  try {
+    const body = await request.json();
+    const { name, phone, password, blood_group, location, last_donation } = body;
+
+    // Validate required fields
+    if (!phone || !password || !blood_group || !location) {
+      return jsonError("Missing required fields", 400, origin, allowedOrigin);
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    // 1. Create user
+    let newUserId;
+    try {
+      const result = await env.DB.prepare(`
+        INSERT INTO users (name, phone, password) VALUES (?, ?, ?)
+      `).bind(name, phone, hashedPassword).run();
+      newUserId = result.meta.last_row_id;
+    } catch (err) {
+      if (err.message.includes("UNIQUE")) {
+        return jsonError("Phone already registered", 400, origin, allowedOrigin);
+      }
+      throw err;
+    }
+
+    // 2. Check if a donor with this phone already exists (unclaimed)
+    const existingDonor = await env.DB.prepare(
+      "SELECT id FROM donors WHERE phone = ?"
+    ).bind(phone).first();
+
+    if (existingDonor) {
+      // Claim the existing donor record
+      await env.DB.prepare(`
+        UPDATE donors SET claimed_by_user_id = ? WHERE phone = ?
+      `).bind(newUserId, phone).run();
+    } else {
+      // Create a new donor record linked to this user
+      await env.DB.prepare(`
+        INSERT INTO donors (name, phone, blood_group, location, last_donation, claimed_by_user_id)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).bind(
+        name,
+        phone,
+        blood_group.toUpperCase(),
+        location,
+        last_donation || null,
+        newUserId
+      ).run();
+    }
+
+    // 3. Auto-login: generate token
+    const token = await generateToken(
+      { userId: newUserId, phone },
+      env.JWT_SECRET
+    );
+
+    const donor = await env.DB.prepare(
+      "SELECT * FROM donors WHERE claimed_by_user_id = ?"
+    ).bind(newUserId).first();
+
+    return jsonResponse({
+      success: true,
+      message: "Registration successful",
+      token,
+      user: { id: newUserId, name, phone },
+      donor: donor || null
+    });
+
+  } catch (err) {
+    return jsonError("Registration failed", 500, origin, allowedOrigin, err.message);
+  }
+}
