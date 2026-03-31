@@ -370,6 +370,7 @@ async function deleteDonorHandler(request, env, ctx, origin, allowedOrigin) {
   }
 }
 
+// web specific endpoint 
 routes["/auth/donor/register-full"] = registerFullHandler;
 async function registerFullHandler(request, env, ctx, origin, allowedOrigin) {
   if (request.method !== "POST") return jsonError("Method not allowed", 405, origin, allowedOrigin);
@@ -444,5 +445,160 @@ async function registerFullHandler(request, env, ctx, origin, allowedOrigin) {
 
   } catch (err) {
     return jsonError("Registration failed", 500, origin, allowedOrigin, err.message);
+  }
+}
+
+routes["/user-donation-info"] = infoHandler;
+async function infoHandler(request, env, ctx, origin, allowedOrigin) {
+  if (request.method !== "GET" && request.method !== "PUT") {
+    return jsonError("Method not allowed", 405, origin, allowedOrigin);
+  }
+
+  const authHeader = request.headers.get("Authorization") || "";
+  const token = authHeader.replace("Bearer ", "");
+  const userData = await verifyToken(token, env.JWT_SECRET);
+  if (!userData) return jsonError("Unauthorized", 401, origin, allowedOrigin);
+
+  try {
+    if (request.method === "GET") {
+      const user = await env.DB.prepare(
+        "SELECT id, name, phone FROM users WHERE id = ?"
+      ).bind(userData.userId).first();
+
+      if (!user) return jsonError("User not found", 404, origin, allowedOrigin);
+
+      const donor = await env.DB.prepare(
+        "SELECT blood_group, location, last_donation FROM donors WHERE claimed_by_user_id = ?"
+      ).bind(userData.userId).first();
+
+      return jsonResponse({
+        success: true,
+        donor: donor || null
+      });
+    }
+
+    if (request.method === "PUT") {
+      const body = await request.json();
+      const { blood_group, location, last_donation } = body;
+
+      const updates = [];
+      const params = [];
+
+      if (blood_group !== undefined) {
+        updates.push("blood_group = ?");
+        params.push(blood_group.toUpperCase());
+      }
+      if (location !== undefined) {
+        updates.push("location = ?");
+        params.push(location);
+      }
+      if (last_donation !== undefined) {
+        updates.push("last_donation = ?");
+        params.push(last_donation);
+      }
+
+      if (updates.length === 0) return jsonError("No fields to update", 400, origin, allowedOrigin);
+
+      params.push(userData.userId);
+      const updateQuery = `UPDATE donors SET ${updates.join(", ")} WHERE claimed_by_user_id = ?`;
+
+      await env.DB.prepare(updateQuery).bind(...params).run();
+
+      return jsonResponse({ success: true, message: "Info updated successfully" });
+    }
+  } catch (err) {
+    return jsonError("Failed to process request", 500, origin, allowedOrigin, err.message);
+  }
+}
+
+routes["/me"] = meHandler;
+async function meHandler(request, env, ctx, origin, allowedOrigin) {
+  if (request.method !== "GET" && request.method !== "PUT") {
+    return jsonError("Method not allowed", 405, origin, allowedOrigin);
+  }
+
+  const authHeader = request.headers.get("Authorization") || "";
+  const token = authHeader.replace("Bearer ", "");
+  const userData = await verifyToken(token, env.JWT_SECRET);
+  if (!userData) return jsonError("Unauthorized", 401, origin, allowedOrigin);
+
+  try {
+    if (request.method === "GET") {
+      const user = await env.DB.prepare(
+        "SELECT id, name, phone FROM users WHERE id = ?"
+      ).bind(userData.userId).first();
+
+      if (!user) return jsonError("User not found", 404, origin, allowedOrigin);
+
+      return jsonResponse({ success: true, user });
+    }
+
+    if (request.method === "PUT") {
+      const body = await request.json();
+      const { name, phone } = body;
+
+      const updates = [];
+      const params = [];
+
+      if (name !== undefined) {
+        updates.push("name = ?");
+        params.push(name);
+      }
+      if (phone !== undefined) {
+        updates.push("phone = ?");
+        params.push(phone);
+      }
+
+      if (updates.length === 0) return jsonError("No fields to update", 400, origin, allowedOrigin);
+
+      params.push(userData.userId);
+      const updateQuery = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
+      const donorUpdateQuery = `UPDATE donors SET ${updates.join(", ")} WHERE claimed_by_user_id = ?`;
+
+      await env.DB.prepare(updateQuery).bind(...params).run();      
+      await env.DB.prepare(donorUpdateQuery).bind(...params).run();
+
+      return jsonResponse({ success: true, message: "User info updated successfully" });
+    }
+  } catch (err) {
+    return jsonError("Failed to process request", 500, origin, allowedOrigin, err.message);
+  }
+};
+
+routes["/auth/change-password"] = changePasswordHandler;
+async function changePasswordHandler(request, env, ctx, origin, allowedOrigin) {
+  if (request.method !== "POST") return jsonError("Method not allowed", 405, origin, allowedOrigin);
+
+  const authHeader = request.headers.get("Authorization") || "";
+  const token = authHeader.replace("Bearer ", "");
+  const userData = await verifyToken(token, env.JWT_SECRET);
+  if (!userData) return jsonError("Unauthorized", 401, origin, allowedOrigin);
+
+  try {
+    const body = await request.json();
+    const { current_password, new_password } = body;
+
+    if (!current_password || !new_password) {
+      return jsonError("Both current and new password are required", 400, origin, allowedOrigin);
+    }
+
+    const user = await env.DB.prepare(
+      "SELECT * FROM users WHERE id = ?"
+    ).bind(userData.userId).first();
+
+    if (!user) return jsonError("User not found", 404, origin, allowedOrigin);
+
+    const isValid = await verifyPassword(current_password, user.password);
+    if (!isValid) return jsonError("Current password is incorrect", 401, origin, allowedOrigin);
+
+    const hashed = await hashPassword(new_password);
+    await env.DB.prepare(
+      "UPDATE users SET password = ? WHERE id = ?"
+    ).bind(hashed, userData.userId).run();
+
+    return jsonResponse({ success: true, message: "Password changed successfully" });
+
+  } catch (err) {
+    return jsonError("Failed to change password", 500, origin, allowedOrigin, err.message);
   }
 }

@@ -16,8 +16,7 @@ document.addEventListener("click", () => {
 
 function updateHeader() {
   const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-  const loggedIn = !!token && !!user;
+  const loggedIn = !!token;
 
   // ---- Desktop nav ----
   const navLinks = document.querySelector(".nav-links");
@@ -68,8 +67,6 @@ function updateHeader() {
 function logout(e) {
   e?.preventDefault();
   localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  localStorage.removeItem("donor");
   window.location.href = "doner-login.html";
 }
 updateHeader();

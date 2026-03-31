@@ -44,7 +44,7 @@ function hideAllSections() {
 }
 
 function showSection(selector) {
-  document.querySelector(selector)?.classList.add("active");
+  document.querySelectorAll(selector).forEach(el => el.classList.add("active"));
 }
 
 function showLoader() {
@@ -55,20 +55,67 @@ function hideLoader() {
   document.getElementById("sectionLoader")?.classList.remove("active");
 }
 
-async function loadYourInfo() {
+async function updateInfoForm(e, form) {
+  e.preventDefault();
+  const formData = new FormData(form);
+  const successMsgEl = form.querySelector(".success-message");
+  const errorMsgEl = form.querySelector(".error-message");
+  successMsgEl.textContent = "";
+  successMsgEl.style.display = "none";
+  errorMsgEl.textContent = "";
+  errorMsgEl.style.display = "none";
+  const bloodGroup = form.querySelector("input[name='blood_group']:checked");
+  if (!bloodGroup) {
+    form.querySelector(".radio-group").classList.add("error");
+    return;
+  }
+  const donorData = Object.fromEntries(formData.entries());
+  const url = API_BASE + form.getAttribute("action");
   try {
     const token = localStorage.getItem("token");
-    const res = await fetch(`${API_BASE}/your-info-endpoint`, {
+    const res = await fetch(url, {
+      method: form.getAttribute("method"),
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(donorData)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      navigateTo(form.getAttribute("data-next"));
+    } else {
+      errorMsgEl.textContent = data.message || "Unknown error";
+      errorMsgEl.style.display = "block";
+      successMsgEl.textContent = "";
+      successMsgEl.style.display = "none";
+      console.error("Add donor failed:", data);
+    }
+  } catch (err) {
+    console.error("loadAddDonor failed:", err);
+    errorMsgEl.textContent = "An error occurred while adding the donor. Please try again.";
+    errorMsgEl.style.display = "block";
+    successMsgEl.textContent = "";
+    successMsgEl.style.display = "none";
+  }
+}
+
+async function loadYourInfo() {
+  const section = document.querySelector(".account-info");
+  const form = section.querySelector("form");  
+  form.addEventListener("submit", async (e) => updateInfoForm(e, form)); 
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_BASE}/user-donation-info`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
     const data = await res.json();
-    const section = document.querySelector(".account-info");
-    if (data.blood_group) {
-      const radio = section.querySelector(`input[name="bloodGroup"][value="${data.blood_group}"]`);
+    if (data.donor.blood_group) {
+      const radio = section.querySelector(`input[name="blood_group"][value="${data.donor.blood_group}"]`);
       if (radio) radio.checked = true;
     }
-    if (data.location) section.querySelector("#location").value = data.location;
-    if (data.last_donation) section.querySelector("#lastDonation").value = data.last_donation;
+    if (data.donor.location) section.querySelector("#location").value = data.donor.location;
+    if (data.donor.last_donation) section.querySelector("#lastDonation").value = data.donor.last_donation;
   } catch (err) {
     console.error("loadYourInfo failed:", err);
   }
@@ -97,13 +144,110 @@ async function loadMyDonors() {
   }
 }
 
-async function loadSettings() {
+async function updateUserInfo(e, form) {
+  e.preventDefault();
+  const formData = new FormData(form);
+  const successMsgEl = form.querySelector(".success-message");
+  const errorMsgEl = form.querySelector(".error-message");
+  successMsgEl.textContent = "";
+  successMsgEl.style.display = "none";
+  errorMsgEl.textContent = "";
+  errorMsgEl.style.display = "none";
+  const userData = Object.fromEntries(formData.entries());
+  const url = API_BASE + form.getAttribute("action");
   try {
-    const user = JSON.parse(localStorage.getItem("user") || "null");
+    const token = localStorage.getItem("token");
+    const res = await fetch(url, {
+      method: form.getAttribute("method"),
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(userData)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      navigateTo(form.getAttribute("data-next"));
+    } else {
+      errorMsgEl.textContent = data.message || "Unknown error";
+      errorMsgEl.style.display = "block";
+      successMsgEl.textContent = "";
+      successMsgEl.style.display = "none";
+      console.error("Add donor failed:", data);
+    }
+  } catch (err) {
+    console.error("loadAddDonor failed:", err);
+    errorMsgEl.textContent = "An error occurred while adding the donor. Please try again.";
+    errorMsgEl.style.display = "block";
+    successMsgEl.textContent = "";
+    successMsgEl.style.display = "none";
+  }
+}
+
+async function updatePassword(e, form) {
+  e.preventDefault();
+  const formData = new FormData(form);
+  const successMsgEl = form.querySelector(".success-message");
+  const errorMsgEl = form.querySelector(".error-message");
+  successMsgEl.textContent = "";
+  successMsgEl.style.display = "none";
+  errorMsgEl.textContent = "";
+  errorMsgEl.style.display = "none";
+
+  const body = Object.fromEntries(formData.entries());
+  if (body.new_password !== body.confirm_password) {
+    errorMsgEl.textContent = "New passwords do not match.";
+    errorMsgEl.style.display = "block";
+    return;
+  }
+
+  delete body.confirm_password;
+  const url = API_BASE + form.getAttribute("action");
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(url, {
+      method: form.getAttribute("method"),
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      form.reset();
+      navigateTo(form.getAttribute("data-next"));
+    } else {
+      errorMsgEl.textContent = data.message || "Unknown error";
+      errorMsgEl.style.display = "block";
+      successMsgEl.textContent = "";
+      successMsgEl.style.display = "none";
+      console.error("Add donor failed:", data);
+    }
+  } catch (err) {
+    console.error("loadAddDonor failed:", err);
+    errorMsgEl.textContent = "An error occurred while adding the donor. Please try again.";
+    errorMsgEl.style.display = "block";
+    successMsgEl.textContent = "";
+    successMsgEl.style.display = "none";
+  }
+}
+
+async function loadSettings() {
+  const sectionOne = document.querySelector(".account-settings.one");
+  const sectionTwo = document.querySelector(".account-settings.two");
+  const formOne = sectionOne.querySelector("form");
+  const formTwo = sectionTwo.querySelector("form");
+  formOne.addEventListener("submit", async (e) => updateUserInfo(e, formOne));
+  formTwo.addEventListener("submit", async (e) => updatePassword(e, formTwo));
+  const url = API_BASE + formOne.getAttribute("action");
+  try {
+    const user = await fetch(url, {
+      headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+    }).then(res => res.json()).then(data => data.user);    
     if (!user) return;
-    const section = document.querySelector(".account-settings");
-    if (section.querySelector("#name"))  section.querySelector("#name").value  = user.name  || "";
-    if (section.querySelector("#phone")) section.querySelector("#phone").value = user.phone || "";
+    if (sectionOne.querySelector("#name"))  sectionOne.querySelector("#name").value  = user.name  || "";
+    if (sectionOne.querySelector("#phone")) sectionOne.querySelector("#phone").value = user.phone || "";
   } catch (err) {
     console.error("loadSettings failed:", err);
   }

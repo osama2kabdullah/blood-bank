@@ -66,20 +66,20 @@
         <!--account info-->
         <div class="dashboard-grid account-info">
           <div class="form-card">
-            <form id="registerForm" class="form-grid">
+            <form action="/user-donation-info" method="put" data-next="#your-info" id="your-info-form" class="form-grid">
               <span class="caption">Your Information</span>
               <div class="form-row">
                 <div class="form-field">
-                  <label for="bloodGroup">Blood Group</label>
+                  <label for="blood_group">Blood Group</label>
                   <div class="radio-group">
-                    <label><input type="radio" name="bloodGroup" value="A+"> A+</label>
-                    <label><input type="radio" name="bloodGroup" value="A-"> A-</label>
-                    <label><input type="radio" name="bloodGroup" value="B+"> B+</label>
-                    <label><input type="radio" name="bloodGroup" value="B-"> B-</label>
-                    <label><input type="radio" name="bloodGroup" value="AB+"> AB+</label>
-                    <label><input type="radio" name="bloodGroup" value="AB-"> AB-</label>
-                    <label><input type="radio" name="bloodGroup" value="O+"> O+</label>
-                    <label><input type="radio" name="bloodGroup" value="O-"> O-</label>
+                    <label><input type="radio" name="blood_group" value="A+"> A+</label>
+                    <label><input type="radio" name="blood_group" value="A-"> A-</label>
+                    <label><input type="radio" name="blood_group" value="B+"> B+</label>
+                    <label><input type="radio" name="blood_group" value="B-"> B-</label>
+                    <label><input type="radio" name="blood_group" value="AB+"> AB+</label>
+                    <label><input type="radio" name="blood_group" value="AB-"> AB-</label>
+                    <label><input type="radio" name="blood_group" value="O+"> O+</label>
+                    <label><input type="radio" name="blood_group" value="O-"> O-</label>
                   </div>
                 </div>
                 <div class="form-field">
@@ -108,14 +108,19 @@
                   <button type="submit" class="btn-secondary">Update Information</button>
                 </div>
               </div>
+
+              <div class="form-messages">
+                <div class="error-message" style="display: none;"></div>
+                <div class="success-message" style="display: none;"></div>
+              </div>
             </form>
           </div>
         </div>
 
         <!--settings-->
-        <div class="dashboard-grid account-settings">
+        <div class="dashboard-grid account-settings one">
           <div class="form-card">
-            <form id="registerForm" class="form-grid">
+            <form action="/me" method="put" data-next="#settings" id="user-settings-form" class="form-grid">
               <span class="caption">Settings</span>
               <div class="form-row">
                 <div class="form-field">
@@ -133,28 +138,34 @@
                   <button type="submit" class="btn-secondary">Update Information</button>
                 </div>
               </div>
+
+              <div class="form-messages">
+                <div class="error-message" style="display: none;"></div>
+                <div class="success-message" style="display: none;"></div>
+              </div>
+
             </form>
           </div>
         </div>
           
-        <div class="dashboard-grid account-settings">
+        <div class="dashboard-grid account-settings two">
           <div class="form-card">
-            <form id="registerForm" class="form-grid">
+            <form action="/auth/change-password" method="post" data-next="#settings" id="change-password-form" class="form-grid">
               <span class="caption">Change Password</span>
               <div class="form-row">
                 <div class="form-field">
                   <label for="currentPassword">Current Password</label>
-                  <input type="password" id="currentPassword" name="currentPassword" placeholder="Enter current password">
+                  <input type="password" id="currentPassword" name="current_password" placeholder="Enter current password">
                 </div>
               </div>
               <div class="form-row">
                 <div class="form-field">
                   <label for="newpassword">New Password</label>
-                  <input type="password" id="newpassword" name="newpassword" placeholder="Enter new password">
+                  <input type="password" id="newpassword" name="new_password" placeholder="Enter new password">
                 </div>
                 <div class="form-field">
                   <label for="confirmPassword">Confirm Password</label>
-                  <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password">
+                  <input type="password" id="confirmPassword" name="confirm_password" placeholder="Confirm password">
                 </div>
               </div>
               <div class="form-row">
@@ -163,6 +174,10 @@
                   <button type="submit" class="btn-secondary">Update Information</button>
                 </div>
               </div>
+              <div class="form-messages">
+                <div class="error-message" style="display: none;"></div>
+                <div class="success-message" style="display: none;"></div>
+              </div>
             </form>
           </div>
         </div>
@@ -170,7 +185,7 @@
         <!--new donor-->
         <div class="dashboard-grid account-new-donor">
           <div class="form-card">
-            <form action="/donors/add" data-next="/my-donors" id="registerForm" class="form-grid">
+            <form action="/donors/add" method="post" data-next="#my-donors" id="new-donor-form" class="form-grid">
               <span class="caption">New Donor</span>
               <div class="form-row">
                 <div class="form-field">
@@ -185,7 +200,7 @@
 
               <div class="form-row">
                 <div class="form-field">
-                  <label data-required="true" for="bloodGroup">Blood Group</label>
+                  <label data-required="true" for="blood_group">Blood Group</label>
                   <div class="radio-group">
                     <label><input type="radio" name="blood_group" value="A+"> A+</label>
                     <label><input type="radio" name="blood_group" value="A-"> A-</label>
