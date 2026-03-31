@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="../static/js/auth-guard.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Doner Account | Blood Bank Shiromoni</title>
@@ -10,13 +11,15 @@
   <header>
     <div class="header-content container">
       <div class="logo">
-        <img src="../static/images/logo.png" alt="Blood Bank Shiromoni Logo">
+        <a href="index.html">
+          <img src="../static/images/logo.png" alt="Blood Bank Shiromoni Logo">
+        </a>
       </div>
       <div class="header-right-side">
         <div class="nav-links">
           <a href="index.html" class="nav-link">Home</a>
         </div>
-        <a href="doner-login.html" class="btn-secondary">Sign Out</a>
+        <a class="action-btn" href=""></a>
         <button class="hamburger-menu">
           <span></span>
           <span></span>
@@ -28,82 +31,224 @@
       </div>
     </div>
   </header>
-
-  <section class="page-hero">
-    <div class="container">
-      <h1 class="page-title">Doner Account</h1>
-      <p class="page-subtitle">Your personal dashboard shows your donor profile, donation history, and availability status in one place.</p>
-    </div>
-  </section>
+  <section class="page-hero"></section>
 
   <main class="container">
-    <div class="dashboard-grid">
-      <div class="form-card">
-        <form class="form-grid">
-          <div class="form-row">
-            <div class="form-field">
-              <label for="name">Full Name</label>
-              <input type="text" id="name" name="name" placeholder="ex: Mehedi Hasan" value="Md Abdullah">
-            </div>
-            <div class="form-field">
-              <label for="phone">Phone Number</label>
-              <input type="tel" id="phone" name="phone" placeholder="ex: +880123456789" value="+880123456789">
-            </div>
-          </div>
+    <div class="account-dashboard">
+      <button class="side-bar-toggle btn-secondary">
+        <div class="hamburger-menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <span class="toggle-text">Menu</span>
+      </button>
+      <aside class="account-sidebar">
+        <div class="avatar">
+          <span class="avatar-placeholder">JD</span>
+          <h2>John Doe</h2>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="#your-info">Your Info</a></li>
+            <li><a href="#my-donors">My Donors</a></li>
+            <li><a href="#settings">Settings</a></li>
+          </ul>
+        </nav>
+        <button class="btn-secondary add-donor">Add Donor</button>
+      </aside>
+      <section class="account-content">
 
-          <div class="form-row">
-            <div class="form-field">
-              <label for="bloodGroup">Blood Group</label>
-              <div class="radio-group">
-                <label><input type="radio" name="bloodGroup" value="A+"> A+</label>
-                <label><input type="radio" name="bloodGroup" value="A-"> A-</label>
-                <label><input type="radio" selected name="bloodGroup" value="B+"> B+</label>
-                <label><input type="radio" name="bloodGroup" value="B-"> B-</label>
-                <label><input type="radio" name="bloodGroup" value="AB+"> AB+</label>
-                <label><input type="radio" name="bloodGroup" value="AB-"> AB-</label>
-                <label><input type="radio" name="bloodGroup" value="O+"> O+</label>
-                <label><input type="radio" name="bloodGroup" value="O-"> O-</label>
+        <div id="sectionLoader" class="active">
+          <div class="loader-spinner"></div>
+        </div>
+
+        <!--account info-->
+        <div class="dashboard-grid account-info">
+          <div class="form-card">
+            <form id="registerForm" class="form-grid">
+              <span class="caption">Your Information</span>
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="bloodGroup">Blood Group</label>
+                  <div class="radio-group">
+                    <label><input type="radio" name="bloodGroup" value="A+"> A+</label>
+                    <label><input type="radio" name="bloodGroup" value="A-"> A-</label>
+                    <label><input type="radio" name="bloodGroup" value="B+"> B+</label>
+                    <label><input type="radio" name="bloodGroup" value="B-"> B-</label>
+                    <label><input type="radio" name="bloodGroup" value="AB+"> AB+</label>
+                    <label><input type="radio" name="bloodGroup" value="AB-"> AB-</label>
+                    <label><input type="radio" name="bloodGroup" value="O+"> O+</label>
+                    <label><input type="radio" name="bloodGroup" value="O-"> O-</label>
+                  </div>
+                </div>
+                <div class="form-field">
+                  <label for="location">Location</label>
+                  <input type="text" id="location" name="location" placeholder="Rajshahi, Dhaka, etc.">
+                </div>
               </div>
-            </div>
-            <div class="form-field">
-              <label for="location">Location</label>
-              <input type="text" id="location" name="location" placeholder="Rajshahi, Dhaka, etc." value="Dhaka">
-            </div>
-          </div>
 
-          <div class="form-row">
-            <div class="form-field">
-              <label for="lastDonation">Last Blood Donation</label>
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="lastDonation">Last Blood Donation</label>
 
-              <div class="date-input">
-                <input type="date" id="lastDonation" value="2023-01-01">
+                  <div class="date-input">
+                    <input type="date" id="lastDonation" name="lastDonation">
 
-                <span class="calendar-icon">
-                  📅
-                </span>
+                    <span class="calendar-icon">
+                      📅
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div class="form-row">
-            <div class="form-field">
-              <label for="password">Password</label>
-              <input value="123456" type="password" id="password" name="password" placeholder="Enter password">
-            </div>
-            <div class="form-field">
-              <label for="confirmPassword">Confirm Password</label>
-              <input value="123456" type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password">
-            </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>&nbsp;</label>
+                  <button type="submit" class="btn-secondary">Update Information</button>
+                </div>
+              </div>
+            </form>
           </div>
+        </div>
 
-          <div class="form-row">
-            <div class="form-field">
-              <label>&nbsp;</label>
-              <button type="submit" class="btn-primary">Update Account</button>
-            </div>
+        <!--settings-->
+        <div class="dashboard-grid account-settings">
+          <div class="form-card">
+            <form id="registerForm" class="form-grid">
+              <span class="caption">Settings</span>
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="name">Full Name</label>
+                  <input type="text" id="name" name="name" placeholder="ex: Mehedi Hasan">
+                </div>
+                <div class="form-field">
+                  <label for="phone">Phone Number</label>
+                  <input type="tel" id="phone" name="phone" placeholder="ex: +880123456789">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>&nbsp;</label>
+                  <button type="submit" class="btn-secondary">Update Information</button>
+                </div>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
+        </div>
+          
+        <div class="dashboard-grid account-settings">
+          <div class="form-card">
+            <form id="registerForm" class="form-grid">
+              <span class="caption">Change Password</span>
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="currentPassword">Current Password</label>
+                  <input type="password" id="currentPassword" name="currentPassword" placeholder="Enter current password">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="newpassword">New Password</label>
+                  <input type="password" id="newpassword" name="newpassword" placeholder="Enter new password">
+                </div>
+                <div class="form-field">
+                  <label for="confirmPassword">Confirm Password</label>
+                  <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>&nbsp;</label>
+                  <button type="submit" class="btn-secondary">Update Information</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!--new donor-->
+        <div class="dashboard-grid account-new-donor">
+          <div class="form-card">
+            <form action="/donors/add" data-next="/my-donors" id="registerForm" class="form-grid">
+              <span class="caption">New Donor</span>
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="new-donor-name">Full Name</label>
+                  <input type="text" id="new-donor-name" name="name" placeholder="ex: Mehedi Hasan">
+                </div>
+                <div class="form-field">
+                  <label for="new-donor-phone">Phone Number</label>
+                  <input required type="tel" id="new-donor-phone" name="phone" placeholder="ex: +880123456789">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-field">
+                  <label data-required="true" for="bloodGroup">Blood Group</label>
+                  <div class="radio-group">
+                    <label><input type="radio" name="blood_group" value="A+"> A+</label>
+                    <label><input type="radio" name="blood_group" value="A-"> A-</label>
+                    <label><input type="radio" name="blood_group" value="B+"> B+</label>
+                    <label><input type="radio" name="blood_group" value="B-"> B-</label>
+                    <label><input type="radio" name="blood_group" value="AB+"> AB+</label>
+                    <label><input type="radio" name="blood_group" value="AB-"> AB-</label>
+                    <label><input type="radio" name="blood_group" value="O+"> O+</label>
+                    <label><input type="radio" name="blood_group" value="O-"> O-</label>
+                  </div>
+                </div>
+                <div class="form-field">
+                  <label for="new-donor-location">Location</label>
+                  <input required type="text" id="new-donor-location" name="location" placeholder="Rajshahi, Dhaka, etc.">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="new-donor-last-donation">Last Blood Donation</label>
+
+                  <div class="date-input">
+                    <input type="date" id="new-donor-last-donation" name="last_donation">
+
+                    <span class="calendar-icon">
+                      📅
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>&nbsp;</label>
+                  <button type="submit" class="btn-secondary">Add Donor</button>
+                </div>
+              </div>
+              
+              <div class="form-messages">
+                <div class="error-message" style="display: none;"></div>
+                <div class="success-message" style="display: none;"></div>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+        <!--my doner list-->
+        <div class="account-donor-list">
+          <div class="section-header">
+            <h2>My Donors</h2>
+            <button class="btn-secondary add-donor">Add Donor</button>
+          </div>
+          <div class="donor-list" id="donorList"></div>
+  
+          <div class="no-donors">
+            <p class="">
+              You haven't added any donors yet. Click the "Add Donor" button to start building your donor list.
+            </p>
+            <button class="btn-secondary add-donor">Add Donor</button>
+          </div>
+        </div>
+
+      </section>
     </div>
   </main>
 
@@ -113,6 +258,7 @@
     </div>
   </footer>
 
-  <script src="../static/js/script.js"></script>
+  <script defer src="../static/js/script.js"></script>
+  <script defer src="../static/js/account-dashboard.js"></script>
 </body>
 </html>

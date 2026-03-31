@@ -119,10 +119,12 @@ header {
   align-items: center;
 }
 .nav-links { display: flex; align-items: center; gap: 2rem; }
+nav a,
 .nav-link {
   font-size: 0.9rem; font-weight: 500; color: var(--on-surface-variant);
   text-decoration: none; transition: color 0.2s;
 }
+nav a:hover,
 .nav-link:hover, .nav-link.active { color: var(--primary); }
 .header-right-side {
   display: flex;
@@ -192,14 +194,44 @@ header {
   color: var(--secondary-container);
 }
 
+.radio-group label:focus {
+  outline: 1px solid var(--secondary);
+}
+
+.radio-group.error label {
+  outline: 1px solid var(--primary);
+}
+
 .form-field input[type="search"] {
   width: 100%;
   padding-left: 40px;
   margin: 0;
 }
 
-.form-field label[for="location"] {
-  position: relative;
+.form-field label[data-required="true"]::after,
+.form-field:has(input:required) label::after {
+  content: " *";
+  color: var(--primary);
+}
+
+.form-grid .form-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-grid .error-message {
+  color: brown;
+}
+
+.form-grid .success-message {
+  color: green;
+}
+
+.form-grid .caption {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--secondary);
   margin-bottom: 10px;
 }
 
@@ -213,7 +245,7 @@ header {
 
 .donor-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
 }
 
@@ -287,7 +319,7 @@ header {
 }
 
 .donor-list .contact svg {
-  color: #25D366;
+  color: black;
 }
 
 .donor-list .no-donors {
@@ -523,6 +555,152 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-weight: 600;
 }
 
+/* ACCOUNT DASHBOARD */
+.account-dashboard {
+  display: grid;
+  gap: 30px;
+  grid-template-columns: 300px 1fr;
+}
+
+.account-sidebar {
+  background: var(--on-primary);
+  border-radius: 12px;
+  border: 1px solid var(--secondary-container);
+  padding: 20px;
+}
+
+.account-sidebar ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.account-dashboard .account-sidebar li a:hover {
+  background-color: var(--secondary-container);
+}
+
+.account-dashboard .account-sidebar li a.active {
+  background-color: var(--secondary);
+  color: var(--secondary-container);
+}
+
+.account-dashboard .account-sidebar nav {
+  margin: 20px 0;
+  padding: 20px 0;
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+  border-color: var(--secondary-container);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.avatar .avatar-placeholder {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--secondary-container);
+  text-align: center;
+  line-height: 50px;
+  font-weight: bold;
+  color: var(--secondary);
+}
+
+.account-content .no-donors {
+  text-align: center;
+  color: var(--on-surface-variant);
+  font-size: 1rem;
+  margin: 40px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: center;
+}
+
+.account-content .no-donors p {
+  max-width: 600px;
+}
+
+.account-content {
+  display: grid;
+  gap: 30px;
+}
+
+.account-content .account-info,
+.account-content .account-settings,
+.account-content .account-donor-list,
+.account-content .account-new-donor {
+  display: none;
+}
+
+.account-content .account-info.active,
+.account-content .account-settings.active,
+.account-content .account-donor-list.active,
+.account-content .account-new-donor.active {
+  display: block;
+}
+
+.account-donor-list .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.account-donor-list h2 {
+  color: var(--secondary);
+}
+
+#sectionLoader.active {
+  display: flex;
+}
+
+#sectionLoader {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 0;
+}
+
+.loader-spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--secondary-container);
+  border-top-color: var(--secondary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.account-dashboard .account-sidebar li a {
+  display: block;
+  cursor: pointer;
+  color: var(--on-surface-variant);
+  border-left: 4px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.side-bar-toggle .hamburger-menu span {
+  background: var(--secondary-container);
+}
+
+.side-bar-toggle {
+  display: none;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 920px) {
   .form-row {
@@ -537,5 +715,20 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .dashboard-card {
     padding: 30px 20px;
     border-radius: 8px;
+  }
+  .account-dashboard {
+    grid-template-columns: 1fr;
+  }
+  .side-bar-toggle {
+    display: flex;
+  }
+  .account-sidebar {
+    display: none;
+  }
+  .account-sidebar.active {
+    display: block;
+  }
+  .account-donor-list .section-header {
+    margin-bottom: 20px;
   }
 }
