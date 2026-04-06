@@ -233,13 +233,72 @@ async function updatePassword(e, form) {
   }
 }
 
+async function deleteAccount(e, form) {
+  e.preventDefault();
+
+  const formData = new FormData(form);
+  const successMsgEl = form.querySelector(".success-message");
+  const errorMsgEl = form.querySelector(".error-message");
+
+  successMsgEl.textContent = "";
+  successMsgEl.style.display = "none";
+  errorMsgEl.textContent = "";
+  errorMsgEl.style.display = "none";
+
+  const body = Object.fromEntries(formData.entries());
+  
+  if (!body.password) {
+    errorMsgEl.textContent = "Please enter the password to delete your account.";
+    errorMsgEl.style.display = "block";
+    return;
+  }
+
+  const url = API_BASE + form.getAttribute("action");
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(url, {
+      method: form.getAttribute("method"),
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      form.reset();
+      localStorage.removeItem("token");
+      window.location.href = "doner-login.html";
+    } else {
+      errorMsgEl.textContent = data.message || "Failed to delete account";
+      errorMsgEl.style.display = "block";
+      console.error("Delete account failed:", data);
+    }
+
+  } catch (err) {
+    console.error("deleteAccount failed:", err);
+    errorMsgEl.textContent = "An error occurred while deleting the account. Please try again.";
+    errorMsgEl.style.display = "block";
+  }
+}
+
 async function loadSettings() {
   const sectionOne = document.querySelector(".account-settings.one");
   const sectionTwo = document.querySelector(".account-settings.two");
+  const sectionThree = document.querySelector(".account-settings.three");
+
   const formOne = sectionOne.querySelector("form");
   const formTwo = sectionTwo.querySelector("form");
+  const formThree = sectionThree.querySelector("form");
+  
   formOne.addEventListener("submit", async (e) => updateUserInfo(e, formOne));
   formTwo.addEventListener("submit", async (e) => updatePassword(e, formTwo));
+  formThree.addEventListener("submit", async (e) => deleteAccount(e, formThree));
+
   const url = API_BASE + formOne.getAttribute("action");
   try {
     const user = await fetch(url, {

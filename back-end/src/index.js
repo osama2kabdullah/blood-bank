@@ -602,3 +602,50 @@ async function changePasswordHandler(request, env, ctx, origin, allowedOrigin) {
     return jsonError("Failed to change password", 500, origin, allowedOrigin, err.message);
   }
 }
+
+routes["/auth/delete-account"] = deleteAccountHandler;
+async function deleteAccountHandler(request, env, ctx, origin, allowedOrigin) {
+  if (request.method !== "DELETE") return jsonError("Method not allowed", 405, origin, allowedOrigin);
+
+  const authHeader = request.headers.get("Authorization") || "";
+  const token = authHeader.replace("Bearer ", "");
+  const userData = await verifyToken(token, env.JWT_SECRET);
+  if (!userData) return jsonError("Unauthorized", 401, origin, allowedOrigin);
+
+  try {
+    const body = await request.json();
+    const { password } = body;
+
+    if (!password) return jsonError("Password is required", 400, origin, allowedOrigin);
+
+    const user = await env.DB.prepare(
+      "SELECT * FROM users WHERE id = ?"
+    ).bind(userData.userId).first();
+
+    if (!user) return jsonError("User not found", 404, origin, allowedOrigin);
+
+    const isValid = await verifyPassword(password, user.password);
+    if (!isValid) return jsonError("Password is incorrect", 401, origin, allowedOrigin);
+
+    await env.DB.prepare(
+      "DELETE FROM donors WHERE added_by_user_id = ? AND claimed_by_user_id IS NULL"
+    ).bind(userData.userId).run();
+
+    await env.DB.prepare(
+      "UPDATE donors SET added_by_user_id = NULL WHERE added_by_user_id = ? AND claimed_by_user_id IS NOT NULL"
+    ).bind(userData.userId).run();
+
+    await env.DB.prepare(
+      "DELETE FROM donors WHERE claimed_by_user_id = ?"
+    ).bind(userData.userId).run();
+
+    await env.DB.prepare(
+      "DELETE FROM users WHERE id = ?"
+    ).bind(userData.userId).run();
+
+    return jsonResponse({ success: true, message: "Account deleted successfully" });
+
+  } catch (err) {
+    return jsonError("Failed to delete account", 500, origin, allowedOrigin, err.message);
+  }
+}

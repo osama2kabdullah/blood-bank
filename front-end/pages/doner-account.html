@@ -181,6 +181,30 @@
             </form>
           </div>
         </div>
+        
+        <div class="dashboard-grid account-settings three">
+          <div class="form-card">
+            <form action="/auth/delete-account" method="delete" data-next="#settings" id="delete-account-form" class="form-grid">
+              <span class="caption">Delete Account</span>
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="delete-password">Password</label>
+                  <input type="password" id="delete-password" name="password" placeholder="Enter password">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>&nbsp;</label>
+                  <button type="submit" class="btn-primary">Delete Account</button>
+                </div>
+              </div>
+              <div class="form-messages">
+                <div class="error-message" style="display: none;"></div>
+                <div class="success-message" style="display: none;"></div>
+              </div>
+            </form>
+          </div>
+        </div>
 
         <!--new donor-->
         <div class="dashboard-grid account-new-donor">
