@@ -35,8 +35,8 @@ function renderDonors(donors) {
     donorListEl.innerHTML = `<p class="no-donors">No donors found. Please adjust your filters or check back later.</p>`;
     return;
   }
-
-  donorListEl.innerHTML = donors.map(donor => donorCardHTML(donor)).join("");
+  const user = getUser();
+  donorListEl.innerHTML = donors.map(donor => donorCardHTML(donor, user)).join("");
 }
 
 // --- Fetch Donors from API ---

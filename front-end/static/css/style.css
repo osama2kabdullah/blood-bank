@@ -51,6 +51,15 @@ body {
   display: inline-block;
 }
 
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  pointer-events: none;
+}
+
 .btn-secondary:hover,
 .btn-primary:hover {
   opacity: 0.92;
@@ -106,7 +115,7 @@ input:focus {
 
 /* ── NAV ── */
 header {
-  position: sticky; top: 0; z-index: 100;
+  position: sticky; top: 0; z-index: 1;
   background: var(--on-primary);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -244,8 +253,7 @@ nav a:hover,
 }
 
 .donor-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  display: flex;
   gap: 20px;
 }
 
@@ -259,10 +267,54 @@ nav a:hover,
   gap: 10px;
   transition: border-color 0.2s;
   max-width: 400px;
+  min-width: calc(25% - 10px);
+}
+
+@media screen and (max-width: 1067px) {
+  .donor-card {
+    min-width: calc(33% - 10px);
+  }
+}
+@media screen and (max-width: 767px) {
+  .donor-card {
+    min-width: calc(50% - 10px);
+  }
+}
+@media screen and (max-width: 467px) {
+  .donor-card {
+    min-width: 100%;
+  }
+}
+
+.restrict-message svg {
+  width: 20px;
+  height: 20px;
+}
+
+.restrict-message {
+  color: var(--secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .donor-card:hover {
   border-color: var(--secondary);
+}
+
+.card-actions {
+  display: flex;
+  gap: 12px;
+  border-top: 1px solid var(--secondary-container);
+  padding-top: 12px;
+  margin-top: 4px;
+  margin-top: auto;
+}
+
+.card-actions button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* header */

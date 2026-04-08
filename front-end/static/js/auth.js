@@ -45,6 +45,7 @@ document.getElementById("registerForm")?.addEventListener("submit", async functi
 
     // Save token + user info to localStorage
     localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
 
     // Redirect to dashboard
     window.location.href = "doner-account.html";
@@ -84,6 +85,7 @@ document.getElementById("loginForm")?.addEventListener("submit", async function 
 
     // Save token + user info to localStorage
     localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
 
     // Redirect to dashboard
     window.location.href = "doner-account.html";

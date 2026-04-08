@@ -137,7 +137,8 @@ async function loadMyDonors() {
       return;
     }
     
-    section.querySelector(".donor-list").innerHTML = donors.map(donorCardHTML).join("");
+    const user = getUser();
+    section.querySelector(".donor-list").innerHTML = donors.map(donor => donorCardHTML(donor, user)).join("");
     section.querySelector(".no-donors").style.display = "none";
   } catch (err) {
     console.error("loadMyDonors failed:", err);
@@ -272,6 +273,7 @@ async function deleteAccount(e, form) {
     if (res.ok) {
       form.reset();
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
       window.location.href = "doner-login.html";
     } else {
       errorMsgEl.textContent = data.message || "Failed to delete account";

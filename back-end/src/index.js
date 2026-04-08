@@ -205,7 +205,7 @@ async function loginHandler(request, env, ctx, origin, allowedOrigin) {
 
 // ---- EDIT DONOR ----
 routes["/donors/edit"] = editDonorHandler;
-async function editDonorHandler(request, env, ctx, origin, allowedOrigin) {
+async function editDonorHandler(request, env, ctx, origin, allowedOrigin) {  
   if (request.method !== "PUT") return jsonError("Method not allowed", 405, origin, allowedOrigin);
 
   const authHeader = request.headers.get("Authorization") || "";
@@ -320,9 +320,9 @@ async function myDonorsHandler(request, env, ctx, origin, allowedOrigin) {
   try {
     const { results } = await env.DB.prepare(`
       SELECT * FROM donors
-      WHERE added_by_user_id = ? OR claimed_by_user_id = ?
+      WHERE added_by_user_id = ?
       ORDER BY created_at DESC
-    `).bind(userData.userId, userData.userId).all();
+    `).bind(userData.userId).all();
 
     return jsonResponse({ success: true, data: results });
 
