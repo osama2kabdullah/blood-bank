@@ -127,15 +127,15 @@ function renderPagination() {
 }
 
 const prevBtn = () => `
-  <button class="page-btn prev" ${currentPage === 1 ? "disabled" : ""}>
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+  <button type="button" class="page-btn prev" aria-label="Go to previous page" ${currentPage === 1 ? "disabled" : ""}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
       <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
     </svg>
   </button>`;
 
 const nextBtn = () => `
-  <button class="page-btn next" ${currentPage === totalPages ? "disabled" : ""}>
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+  <button type="button" class="page-btn next" aria-label="Go to next page" ${currentPage === totalPages ? "disabled" : ""}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
       <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
     </svg>
   </button>`;

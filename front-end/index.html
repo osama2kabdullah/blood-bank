@@ -39,7 +39,7 @@
           <a href="index.html" class="nav-link">Home</a>
         </div>
         <a class="action-btn"></a>
-        <button class="hamburger-menu">
+        <button type="button" class="hamburger-menu" aria-label="Toggle mobile menu">
           <span></span>
           <span></span>
           <span></span>
@@ -51,60 +51,62 @@
     </div>
   </header>
 
-  <section class="page-hero">
-    <div class="container">
-      <form id="donor-filter-form">
-        <div class="form-row">
-          <div class="form-field">
-            <label for="blood_group">Blood Group</label>
-            <div class="radio-group">
-              <label><input type="radio" name="blood_group" value="" checked> All</label>
-              <label><input type="radio" name="blood_group" value="A+"> A+</label>
-              <label><input type="radio" name="blood_group" value="A-"> A-</label>
-              <label><input type="radio" name="blood_group" value="B+"> B+</label>
-              <label><input type="radio" name="blood_group" value="B-"> B-</label>
-              <label><input type="radio" name="blood_group" value="AB+"> AB+</label>
-              <label><input type="radio" name="blood_group" value="AB-"> AB-</label>
-              <label><input type="radio" name="blood_group" value="O+"> O+</label>
-              <label><input type="radio" name="blood_group" value="O-"> O-</label>
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <form id="donor-filter-form">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="blood_group">Blood Group</label>
+              <div class="radio-group">
+                <label><input type="radio" name="blood_group" value="" checked> All</label>
+                <label><input type="radio" name="blood_group" value="A+"> A+</label>
+                <label><input type="radio" name="blood_group" value="A-"> A-</label>
+                <label><input type="radio" name="blood_group" value="B+"> B+</label>
+                <label><input type="radio" name="blood_group" value="B-"> B-</label>
+                <label><input type="radio" name="blood_group" value="AB+"> AB+</label>
+                <label><input type="radio" name="blood_group" value="AB-"> AB-</label>
+                <label><input type="radio" name="blood_group" value="O+"> O+</label>
+                <label><input type="radio" name="blood_group" value="O-"> O-</label>
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="location" style="margin-bottom: 8px;">Location</label>
+              <label for="location" style="position: relative; margin-bottom: 10px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="search-icon" viewBox="0 0 16 16">
+                  <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                </svg>
+                <input type="search" autocomplete="off" id="location" name="location" placeholder="Rajshahi, Dhaka, etc.">
+              </label>
             </div>
           </div>
-          <div class="form-field">
-            <label for="location" style="margin-bottom: 8px;">Location</label>
-            <label for="location" style="position: relative; margin-bottom: 10px;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="search-icon" viewBox="0 0 16 16">
-                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-              </svg>
-              <input type="search" autocomplete="off" id="location" name="location" placeholder="Rajshahi, Dhaka, etc.">
-            </label>
-          </div>
+          <button style="max-width: 100px;margin-top: 15px;" type="submit" class="btn-secondary btn-secondary-outlined">Search</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="container">
+      
+      <div class="result-summery">
+        <div class="perams">
+          <p>Blood Group: <span class="blood_group"></span></p>
+          <p>Location: <span class="location-name"></span></p>
         </div>
-        <button style="max-width: 100px;margin-top: 15px;" type="submit" class="btn-secondary btn-secondary-outlined">Search</button>
-      </form>
-    </div>
-  </section>
-
-  <section class="container">
-    
-    <div class="result-summery">
-      <div class="perams">
-        <p>Blood Group: <span class="blood_group"></span></p>
-        <p>Location: <span class="location-name"></span></p>
+        <p class="result-count">
+          Showing <span class="from"></span> - <span class="to"></span> of <span class="total"></span>
+        </p>
       </div>
-      <p class="result-count">
-        Showing <span class="from"></span> - <span class="to"></span> of <span class="total"></span>
-      </p>
-    </div>
 
-    <div class="donor-list" id="donorList">
-      <div id="sectionLoader" class="active">
-        <div class="loader-spinner"></div>
+      <div class="donor-list" id="donorList">
+        <div id="sectionLoader" class="active">
+          <div class="loader-spinner"></div>
+        </div>
       </div>
-    </div>
 
-    <div class="pagination"></div>
+      <div class="pagination"></div>
 
-  </section>
+    </section>
+  </main>
 
   <footer>
     <div class="container">
