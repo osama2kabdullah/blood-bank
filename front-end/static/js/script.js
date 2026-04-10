@@ -2,7 +2,7 @@
 // script.js — Global. Loaded on every page.
 // ============================================================
 
-const API_BASE = "http://127.0.0.1:8787";
+const API_BASE = "https://blood-bank-backend.abdullah21673.workers.dev";
 
 // ── Auth helpers ─────────────────────────────────────────────
 function getUser() {
