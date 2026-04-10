@@ -1,6 +1,7 @@
 import { verifyToken, generateToken } from "../utils/token.js";
 import { hashPassword, verifyPassword } from "../utils/hash.js";
 import { createUser, claimOrCreateDonor } from "../utils/helper.js";
+import { dummyDonors } from "./dummyDonors.js";
 
 // ---- ROUTES ---- (must be declared before any route assignment)
 const routes = {};
@@ -84,39 +85,46 @@ routes["/donors"] = donorsHandler;
 async function donorsHandler(request, env, ctx, origin, allowedOrigin) {
   const url = new URL(request.url);
 
-  // Fix #5: normalize blood group cleanly before any logic
   let blood = url.searchParams.get("blood_group")?.trim().toUpperCase().replace(/\s+/g, "") || "";
-  const location = url.searchParams.get("location")?.trim();
-  const page = Math.max(1, parseInt(url.searchParams.get("page") || "1"));
-  const limit = 10;
+  if (blood && blood !== "ALL" && !blood.endsWith("+") && !blood.endsWith("-")) blood += "+";
+  const bloodFilter    = (!blood || blood === "ALL") ? null : blood;
+
+  const location       = url.searchParams.get("location")?.trim();
+  const locationFilter = (!location || location.toLowerCase() === "all bangladesh") ? null : location;
+
+  const page   = Math.max(1, parseInt(url.searchParams.get("page") || "1"));
+  const limit  = 10;
   const offset = (page - 1) * limit;
 
-  // Auto-add '+' only if no sign present
-  if (blood && !blood.endsWith("+") && !blood.endsWith("-")) {
-    blood = blood + "+";
-  }
+  const conditions = ["1=1"];
+  const filterParams = [];
 
-  let query = "SELECT * FROM donors WHERE 1=1";
-  const params = [];
+  if (bloodFilter)    { conditions.push("blood_group = ?");             filterParams.push(bloodFilter); }
+  if (locationFilter) { conditions.push("location = ? COLLATE NOCASE"); filterParams.push(locationFilter); }
 
-  if (blood) {
-    query += " AND blood_group = ?";
-    params.push(blood);
-  }
-
-  if (location) {
-    query += " AND location = ? COLLATE NOCASE";
-    params.push(location);
-  }
-
-  query += " LIMIT ? OFFSET ?";
-  params.push(limit, offset);
+  const where = conditions.join(" AND ");
 
   try {
-    const { results } = await env.DB.prepare(query).bind(...params).all();
-    return jsonResponse({ page, limit, data: results });
+    const [countResult, dataResult] = await env.DB.batch([
+      env.DB.prepare(`SELECT COUNT(*) as total FROM donors WHERE ${where}`).bind(...filterParams),
+      env.DB.prepare(`SELECT * FROM donors WHERE ${where} ORDER BY id DESC LIMIT ? OFFSET ?`).bind(...filterParams, limit, offset),
+    ]);
+
+    const total      = countResult.results[0].total;
+    const totalPages = Math.ceil(total / limit);
+
+    return jsonResponse({
+      page,
+      limit,
+      total,
+      total_pages: totalPages,
+      has_next:    page < totalPages,
+      has_prev:    page > 1,
+      data:        dataResult.results,
+    });
+
   } catch (err) {
-    return jsonError("Failed to fetch donors", 500, origin, allowedOrigin, err.message); // Fix #3
+    return jsonError("Failed to fetch donors", 500, origin, allowedOrigin, err.message);
   }
 }
 
@@ -227,10 +235,10 @@ async function editDonorHandler(request, env, ctx, origin, allowedOrigin) {
 
     // Fix #4: coerce both sides to Number for safe comparison
     if (donor.claimed_by_user_id) {
-      if (Number(donor.claimed_by_user_id) !== Number(userData.userId))
+      if (donor.claimed_by_user_id !== userData.userId)
         return jsonError("You cannot edit this claimed donor", 403, origin, allowedOrigin);
     } else {
-      if (Number(donor.added_by_user_id) !== Number(userData.userId))
+      if (donor.added_by_user_id !== userData.userId)
         return jsonError("You cannot edit this donor", 403, origin, allowedOrigin);
     }
 
@@ -313,18 +321,50 @@ async function myDonorsHandler(request, env, ctx, origin, allowedOrigin) {
   if (request.method !== "GET") return jsonError("Method not allowed", 405, origin, allowedOrigin);
 
   const authHeader = request.headers.get("Authorization") || "";
-  const token = authHeader.replace("Bearer ", "");
-  const userData = await verifyToken(token, env.JWT_SECRET);
+  const token      = authHeader.replace("Bearer ", "");
+  const userData   = await verifyToken(token, env.JWT_SECRET);
   if (!userData) return jsonError("Unauthorized", 401, origin, allowedOrigin);
 
-  try {
-    const { results } = await env.DB.prepare(`
-      SELECT * FROM donors
-      WHERE added_by_user_id = ?
-      ORDER BY created_at DESC
-    `).bind(userData.userId).all();
+  const url    = new URL(request.url);
 
-    return jsonResponse({ success: true, data: results });
+  let blood = url.searchParams.get("blood_group")?.trim().toUpperCase().replace(/\s+/g, "") || "";
+  if (blood && blood !== "ALL" && !blood.endsWith("+") && !blood.endsWith("-")) blood += "+";
+  const bloodFilter    = (!blood || blood === "ALL") ? null : blood;
+
+  const location       = url.searchParams.get("location")?.trim();
+  const locationFilter = (!location || location.toLowerCase() === "all bangladesh") ? null : location;
+
+  const page   = Math.max(1, parseInt(url.searchParams.get("page") || "1"));
+  const limit  = 10;
+  const offset = (page - 1) * limit;
+
+  const conditions   = ["added_by_user_id = ?"];
+  const filterParams = [userData.userId];
+
+  if (bloodFilter)    { conditions.push("blood_group = ?");             filterParams.push(bloodFilter); }
+  if (locationFilter) { conditions.push("location = ? COLLATE NOCASE"); filterParams.push(locationFilter); }
+
+  const where = conditions.join(" AND ");
+
+  try {
+    const [countResult, dataResult] = await env.DB.batch([
+      env.DB.prepare(`SELECT COUNT(*) as total FROM donors WHERE ${where}`).bind(...filterParams),
+      env.DB.prepare(`SELECT * FROM donors WHERE ${where} ORDER BY id DESC LIMIT ? OFFSET ?`).bind(...filterParams, limit, offset),
+    ]);
+
+    const total      = countResult.results[0].total;
+    const totalPages = Math.ceil(total / limit);
+
+    return jsonResponse({
+      success:     true,
+      page,
+      limit,
+      total,
+      total_pages: totalPages,
+      has_next:    page < totalPages,
+      has_prev:    page > 1,
+      data:        dataResult.results,
+    });
 
   } catch (err) {
     return jsonError("Failed to fetch your donors", 500, origin, allowedOrigin, err.message);
@@ -353,12 +393,15 @@ async function deleteDonorHandler(request, env, ctx, origin, allowedOrigin) {
 
     if (!donor) return jsonError("Donor not found", 404, origin, allowedOrigin);
 
-    // Fix #4: coerce both sides to Number for safe comparison
+    if (donor.claimed_by_user_id === userData.userId) {
+      return jsonError("You cannot delete your own donor entry", 403, origin, allowedOrigin);
+    }
+
     if (donor.claimed_by_user_id) {
-      if (Number(donor.claimed_by_user_id) !== Number(userData.userId))
+      if (donor.claimed_by_user_id !== userData.userId)
         return jsonError("You cannot delete this claimed donor", 403, origin, allowedOrigin);
     } else {
-      if (Number(donor.added_by_user_id) !== Number(userData.userId))
+      if (donor.added_by_user_id !== userData.userId)
         return jsonError("You cannot delete this donor", 403, origin, allowedOrigin);
     }
 

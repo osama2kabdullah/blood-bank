@@ -1,368 +1,274 @@
-const API_BASE = "http://127.0.0.1:8787";
+// ============================================================
+// account-dashboard.js — Account page only.
+// Requires: script.js (apiFetch, getUser, donorCardHTML, showLoader, hideLoader,
+//                       clearMessages, showFormError, showFormSuccess)
+// ============================================================
 
-const sections = {
-  "#your-info":  { el: ".account-info",       load: loadYourInfo },
-  "#my-donors":  { el: ".account-donor-list", load: loadMyDonors },
-  "#settings":   { el: ".account-settings",   load: loadSettings },
-  "#add-donor":  { el: ".account-new-donor",  load: loadAddDonor },
+// ── Section map ───────────────────────────────────────────────
+const SECTIONS = {
+  "#your-info": { selector: ".account-info",       load: loadYourInfo },
+  "#my-donors": { selector: ".account-donor-list", load: loadMyDonors },
+  "#settings":  { selector: ".account-settings",   load: loadSettings },
+  "#add-donor": { selector: ".account-new-donor",  load: loadAddDonor },
 };
-
 const DEFAULT_SECTION = "#your-info";
 let currentSection = null;
 
-document.querySelectorAll(".account-sidebar nav a").forEach(link => {
-  link.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const hash = link.getAttribute("href");
-    await navigateTo(hash);
-  });
-});
-
-document.querySelectorAll(".add-donor").forEach(btn => {
-  btn.addEventListener("click", () => navigateTo("#add-donor"));
-});
-
+// ── Navigation ────────────────────────────────────────────────
 async function navigateTo(hash) {
-  if (!sections[hash]) return;
+  const section = SECTIONS[hash];
+  if (!section) return;
 
   window.location.hash = hash;
+  currentSection = hash;
 
+  // Update active sidebar link
   document.querySelectorAll(".account-sidebar nav a").forEach(l => l.classList.remove("active"));
   document.querySelector(`.account-sidebar nav a[href="${hash}"]`)?.classList.add("active");
 
-  hideAllSections();
-  showLoader();
-  await sections[hash].load();
-  hideLoader();
-  showSection(sections[hash].el);
-  currentSection = hash;
-}
-
-function hideAllSections() {
+  // Swap visible section
   document.querySelectorAll(".account-content .dashboard-grid, .account-donor-list")
     .forEach(el => el.classList.remove("active"));
+
+  showLoader();
+  await section.load();
+  hideLoader();
+
+  document.querySelectorAll(section.selector).forEach(el => el.classList.add("active"));
 }
 
-function showSection(selector) {
-  document.querySelectorAll(selector).forEach(el => el.classList.add("active"));
-}
-
-function showLoader() {
-  document.getElementById("sectionLoader")?.classList.add("active");
-}
-
-function hideLoader() {
-  document.getElementById("sectionLoader")?.classList.remove("active");
-}
-
-async function updateInfoForm(e, form) {
+// ── Generic form submit handler ───────────────────────────────
+// Each form just provides getBody() for custom validation + onSuccess().
+async function handleFormSubmit(e, form, { getBody, onSuccess }) {
   e.preventDefault();
-  const formData = new FormData(form);
-  const successMsgEl = form.querySelector(".success-message");
-  const errorMsgEl = form.querySelector(".error-message");
-  successMsgEl.textContent = "";
-  successMsgEl.style.display = "none";
-  errorMsgEl.textContent = "";
-  errorMsgEl.style.display = "none";
-  const bloodGroup = form.querySelector("input[name='blood_group']:checked");
-  if (!bloodGroup) {
-    form.querySelector(".radio-group").classList.add("error");
-    return;
-  }
-  const donorData = Object.fromEntries(formData.entries());
-  const url = API_BASE + form.getAttribute("action");
+  clearMessages(form);
+
+  const body = getBody ? getBody(form) : Object.fromEntries(new FormData(form).entries());
+  if (body === null) return; // validation failed inside getBody
+
+  const url    = form.getAttribute("action");
+  const method = (form.getAttribute("method") || "POST").toUpperCase();
+
   try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(url, {
-      method: form.getAttribute("method"),
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(donorData)
-    });
-    const data = await res.json();
-    if (res.ok) {
-      navigateTo(form.getAttribute("data-next"));
+    const data = await apiFetch(url, { method, body });
+    if (data.ok) {
+      onSuccess(data, form);
     } else {
-      errorMsgEl.textContent = data.message || "Unknown error";
-      errorMsgEl.style.display = "block";
-      successMsgEl.textContent = "";
-      successMsgEl.style.display = "none";
-      console.error("Add donor failed:", data);
+      showFormError(form, data.message || "Unknown error.");
     }
   } catch (err) {
-    console.error("loadAddDonor failed:", err);
-    errorMsgEl.textContent = "An error occurred while adding the donor. Please try again.";
-    errorMsgEl.style.display = "block";
-    successMsgEl.textContent = "";
-    successMsgEl.style.display = "none";
+    console.error(err);
+    showFormError(form, "Something went wrong. Please try again.");
   }
 }
 
+// ── Section loaders ───────────────────────────────────────────
 async function loadYourInfo() {
   const section = document.querySelector(".account-info");
-  const form = section.querySelector("form");  
-  form.addEventListener("submit", async (e) => updateInfoForm(e, form)); 
   try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${API_BASE}/user-donation-info`, {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (data.donor.blood_group) {
-      const radio = section.querySelector(`input[name="blood_group"][value="${data.donor.blood_group}"]`);
-      if (radio) radio.checked = true;
+    const data  = await apiFetch("/user-donation-info");
+    const donor = data.donor;
+    if (!donor) return;
+
+    if (donor.blood_group) {
+      section.querySelector(`input[name="blood_group"][value="${donor.blood_group}"]`)?.setAttribute("checked", true);
     }
-    if (data.donor.location) section.querySelector("#location").value = data.donor.location;
-    if (data.donor.last_donation) section.querySelector("#lastDonation").value = data.donor.last_donation;
+    if (donor.location)      section.querySelector("#location").value      = donor.location;
+    if (donor.last_donation) section.querySelector("#lastDonation").value  = donor.last_donation;
   } catch (err) {
-    console.error("loadYourInfo failed:", err);
+    console.error("loadYourInfo:", err);
   }
 }
 
 async function loadMyDonors() {
+  const section = document.querySelector(".account-donor-list");
+  const list    = section?.querySelector(".donor-list");
+  const empty   = section?.querySelector(".no-donors");
+
   try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${API_BASE}/my-donors`, {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-    const data = await res.json();
+    const data   = await apiFetch("/my-donors");
     const donors = data.data || [];
-    const section = document.querySelector(".account-donor-list");
 
     if (!donors.length) {
-      section.querySelector(".no-donors").style.display = "block";
-      section.querySelector(".donor-list") && (section.querySelector(".donor-list").style.display = "none");
+      if (empty) empty.style.display = "block";
+      if (list)  list.style.display  = "none";
       return;
     }
-    
+
     const user = getUser();
-    section.querySelector(".donor-list").innerHTML = donors.map(donor => donorCardHTML(donor, user)).join("");
-    section.querySelector(".no-donors").style.display = "none";
+    if (list)  list.innerHTML        = donors.map(d => donorCardHTML(d, user)).join("");
+    if (empty) empty.style.display   = "none";
+    if (list)  list.style.display    = "";
   } catch (err) {
-    console.error("loadMyDonors failed:", err);
-  }
-}
-
-async function updateUserInfo(e, form) {
-  e.preventDefault();
-  const formData = new FormData(form);
-  const successMsgEl = form.querySelector(".success-message");
-  const errorMsgEl = form.querySelector(".error-message");
-  successMsgEl.textContent = "";
-  successMsgEl.style.display = "none";
-  errorMsgEl.textContent = "";
-  errorMsgEl.style.display = "none";
-  const userData = Object.fromEntries(formData.entries());
-  const url = API_BASE + form.getAttribute("action");
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(url, {
-      method: form.getAttribute("method"),
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(userData)
-    });
-    const data = await res.json();
-    if (res.ok) {
-      navigateTo(form.getAttribute("data-next"));
-    } else {
-      errorMsgEl.textContent = data.message || "Unknown error";
-      errorMsgEl.style.display = "block";
-      successMsgEl.textContent = "";
-      successMsgEl.style.display = "none";
-      console.error("Add donor failed:", data);
-    }
-  } catch (err) {
-    console.error("loadAddDonor failed:", err);
-    errorMsgEl.textContent = "An error occurred while adding the donor. Please try again.";
-    errorMsgEl.style.display = "block";
-    successMsgEl.textContent = "";
-    successMsgEl.style.display = "none";
-  }
-}
-
-async function updatePassword(e, form) {
-  e.preventDefault();
-  const formData = new FormData(form);
-  const successMsgEl = form.querySelector(".success-message");
-  const errorMsgEl = form.querySelector(".error-message");
-  successMsgEl.textContent = "";
-  successMsgEl.style.display = "none";
-  errorMsgEl.textContent = "";
-  errorMsgEl.style.display = "none";
-
-  const body = Object.fromEntries(formData.entries());
-  if (body.new_password !== body.confirm_password) {
-    errorMsgEl.textContent = "New passwords do not match.";
-    errorMsgEl.style.display = "block";
-    return;
-  }
-
-  delete body.confirm_password;
-  const url = API_BASE + form.getAttribute("action");
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(url, {
-      method: form.getAttribute("method"),
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
-    if (res.ok) {
-      form.reset();
-      navigateTo(form.getAttribute("data-next"));
-    } else {
-      errorMsgEl.textContent = data.message || "Unknown error";
-      errorMsgEl.style.display = "block";
-      successMsgEl.textContent = "";
-      successMsgEl.style.display = "none";
-      console.error("Add donor failed:", data);
-    }
-  } catch (err) {
-    console.error("loadAddDonor failed:", err);
-    errorMsgEl.textContent = "An error occurred while adding the donor. Please try again.";
-    errorMsgEl.style.display = "block";
-    successMsgEl.textContent = "";
-    successMsgEl.style.display = "none";
-  }
-}
-
-async function deleteAccount(e, form) {
-  e.preventDefault();
-
-  const formData = new FormData(form);
-  const successMsgEl = form.querySelector(".success-message");
-  const errorMsgEl = form.querySelector(".error-message");
-
-  successMsgEl.textContent = "";
-  successMsgEl.style.display = "none";
-  errorMsgEl.textContent = "";
-  errorMsgEl.style.display = "none";
-
-  const body = Object.fromEntries(formData.entries());
-  
-  if (!body.password) {
-    errorMsgEl.textContent = "Please enter the password to delete your account.";
-    errorMsgEl.style.display = "block";
-    return;
-  }
-
-  const url = API_BASE + form.getAttribute("action");
-
-  try {
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(url, {
-      method: form.getAttribute("method"),
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(body)
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      form.reset();
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "doner-login.html";
-    } else {
-      errorMsgEl.textContent = data.message || "Failed to delete account";
-      errorMsgEl.style.display = "block";
-      console.error("Delete account failed:", data);
-    }
-
-  } catch (err) {
-    console.error("deleteAccount failed:", err);
-    errorMsgEl.textContent = "An error occurred while deleting the account. Please try again.";
-    errorMsgEl.style.display = "block";
+    console.error("loadMyDonors:", err);
   }
 }
 
 async function loadSettings() {
   const sectionOne = document.querySelector(".account-settings.one");
-  const sectionTwo = document.querySelector(".account-settings.two");
-  const sectionThree = document.querySelector(".account-settings.three");
+  const actionUrl  = sectionOne?.querySelector("form")?.getAttribute("action");
+  if (!actionUrl) return;
 
-  const formOne = sectionOne.querySelector("form");
-  const formTwo = sectionTwo.querySelector("form");
-  const formThree = sectionThree.querySelector("form");
-  
-  formOne.addEventListener("submit", async (e) => updateUserInfo(e, formOne));
-  formTwo.addEventListener("submit", async (e) => updatePassword(e, formTwo));
-  formThree.addEventListener("submit", async (e) => deleteAccount(e, formThree));
-
-  const url = API_BASE + formOne.getAttribute("action");
   try {
-    const user = await fetch(url, {
-      headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
-    }).then(res => res.json()).then(data => data.user);    
+    const data = await apiFetch(actionUrl);
+    const user = data.user;
     if (!user) return;
-    if (sectionOne.querySelector("#name"))  sectionOne.querySelector("#name").value  = user.name  || "";
-    if (sectionOne.querySelector("#phone")) sectionOne.querySelector("#phone").value = user.phone || "";
+
+    sectionOne.querySelector("#name") && (sectionOne.querySelector("#name").value   = user.name  || "");
+    sectionOne.querySelector("#phone") && (sectionOne.querySelector("#phone").value = user.phone || "");
   } catch (err) {
-    console.error("loadSettings failed:", err);
+    console.error("loadSettings:", err);
   }
 }
 
 async function loadAddDonor() {
-  const form = document.querySelector(".account-new-donor form");
+  const section = document.querySelector(".account-new-donor");
+  const old     = section?.querySelector("form");
+  if (!old) return;
+
+  // Clone to remove any stacked listeners from previous visits
+  const form = old.cloneNode(true);
+  old.parentNode.replaceChild(form, old);
   form.reset();
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    const successMsgEl = form.querySelector(".success-message");
-    const errorMsgEl = form.querySelector(".error-message");
-    successMsgEl.textContent = "";
-    successMsgEl.style.display = "none";
-    errorMsgEl.textContent = "";
-    errorMsgEl.style.display = "none";
-    const bloodGroup = form.querySelector("input[name='blood_group']:checked");
-    if (!bloodGroup) {
-      form.querySelector(".radio-group").classList.add("error");
-      return;
-    }
-    const donorData = Object.fromEntries(formData.entries());
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_BASE}/donors/add`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(donorData)
-      });
-      const data = await res.json();
-      if (res.ok) {
+
+  form.addEventListener("submit", (e) => {
+    handleFormSubmit(e, form, {
+      getBody(f) {
+        const blood = f.querySelector("input[name='blood_group']:checked");
+        if (!blood) {
+          f.querySelector(".radio-group")?.classList.add("error");
+          return null;
+        }
+        return Object.fromEntries(new FormData(f).entries());
+      },
+      onSuccess() {
         navigateTo("#my-donors");
-      } else {
-        errorMsgEl.textContent = data.message || "Unknown error";
-        errorMsgEl.style.display = "block";
-        successMsgEl.textContent = "";
-        successMsgEl.style.display = "none";
-        console.error("Add donor failed:", data);
-      }
-    } catch (err) {
-      console.error("loadAddDonor failed:", err);
-      errorMsgEl.textContent = "An error occurred while adding the donor. Please try again.";
-      errorMsgEl.style.display = "block";
-      successMsgEl.textContent = "";
-      successMsgEl.style.display = "none";
-    }
+      },
+    });
   });
 }
 
+// ── Settings forms ────────────────────────────────────────────
+function bindSettingsForms() {
+  // Section 1: update name/phone
+  const s1 = document.querySelector(".account-settings.one form");
+  s1?.addEventListener("submit", (e) => {
+    handleFormSubmit(e, s1, {
+      onSuccess(data, form) {
+        navigateTo(form.dataset.next || "#your-info");
+      },
+    });
+  });
+
+  // Section 2: change password
+  const s2 = document.querySelector(".account-settings.two form");
+  s2?.addEventListener("submit", (e) => {
+    handleFormSubmit(e, s2, {
+      getBody(form) {
+        const body = Object.fromEntries(new FormData(form).entries());
+        if (body.new_password !== body.confirm_password) {
+          showFormError(form, "New passwords do not match.");
+          return null;
+        }
+        delete body.confirm_password;
+        return body;
+      },
+      onSuccess(data, form) {
+        form.reset();
+        navigateTo(form.dataset.next || "#your-info");
+      },
+    });
+  });
+
+  // Section 3: delete account
+  const s3 = document.querySelector(".account-settings.three form");
+  s3?.addEventListener("submit", (e) => {
+    handleFormSubmit(e, s3, {
+      getBody(form) {
+        const body = Object.fromEntries(new FormData(form).entries());
+        if (!body.password) {
+          showFormError(form, "Please enter your password to delete account.");
+          return null;
+        }
+        return body;
+      },
+      onSuccess() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "doner-login.html";
+      },
+    });
+  });
+}
+
+// ── Account info form (your-info section) ─────────────────────
+function bindAccountInfoForm() {
+  const form = document.querySelector(".account-info form");
+  form?.addEventListener("submit", (e) => {
+    handleFormSubmit(e, form, {
+      getBody(f) {
+        if (!f.querySelector("input[name='blood_group']:checked")) {
+          f.querySelector(".radio-group")?.classList.add("error");
+          return null;
+        }
+        return Object.fromEntries(new FormData(f).entries());
+      },
+      onSuccess(data, f) {
+        navigateTo(f.dataset.next || "#your-info");
+      },
+    });
+  });
+}
+
+// ── Sidebar identity ──────────────────────────────────────────
+function loadSidebarIdentity() {
+  const user  = getUser();
+  const phone = user?.phone || "";
+
+  const avatarEl = document.querySelector(".account-sidebar .avatar .avatar-placeholder");
+  const nameEl   = document.querySelector(".account-sidebar .avatar h2");
+
+  if (avatarEl) avatarEl.textContent = phone.slice(-2);
+  if (nameEl)   nameEl.textContent   = phone;
+}
+
+// ── Events ────────────────────────────────────────────────────
+function bindEvents() {
+  document.querySelectorAll(".account-sidebar nav a").forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      navigateTo(link.getAttribute("href"));
+    });
+  });
+
+  document.querySelectorAll(".add-donor").forEach(btn => {
+    btn.addEventListener("click", () => navigateTo("#add-donor"));
+  });
+}
+
+function initAccountSidebar() {
+  const hamburger  = document.querySelector(".side-bar-toggle");
+  const mobileMenu = document.querySelector(".account-sidebar");
+  if (!hamburger || !mobileMenu) return;
+
+  hamburger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    mobileMenu.classList.toggle("active");
+  });
+
+  mobileMenu.addEventListener("click", (e) => e.stopPropagation());
+
+  document.addEventListener("click", () => mobileMenu.classList.remove("active"));
+}
+
+// ── Init ──────────────────────────────────────────────────────
 (function init() {
-  const hash = window.location.hash || DEFAULT_SECTION;
-  navigateTo(sections[hash] ? hash : DEFAULT_SECTION);
+  loadSidebarIdentity();
+  bindEvents();
+  bindAccountInfoForm();
+  bindSettingsForms();
+  initAccountSidebar();
+
+  const hash = window.location.hash;
+  navigateTo(SECTIONS[hash] ? hash : DEFAULT_SECTION);
 })();

@@ -1,24 +1,15 @@
-const GUEST_ONLY_PAGES = [
-  "doner-login.html",
-  "doner-registration.html"
-];
-const PROTECTED_PAGES = [
-  "doner-account.html",
-];
-function authGuard() {
-  const token = localStorage.getItem("token");
-  const loggedIn = !!token;
+// ============================================================
+// auth-guard.js — Loaded on every page (before script.js is fine).
+// Redirects logged-in users away from guest pages and vice versa.
+// ============================================================
 
+const GUEST_ONLY = ["doner-login.html", "doner-registration.html"];
+const PROTECTED  = ["doner-account.html"];
+
+(function authGuard() {
+  const loggedIn   = !!localStorage.getItem("token");
   const currentPage = window.location.pathname.split("/").pop();
 
-  if (loggedIn && GUEST_ONLY_PAGES.includes(currentPage)) {
-    window.location.replace("doner-account.html");
-    return;
-  }
-
-  if (!loggedIn && PROTECTED_PAGES.includes(currentPage)) {
-    window.location.replace("doner-login.html");
-    return;
-  }
-}
-authGuard();
+  if (loggedIn  && GUEST_ONLY.includes(currentPage)) { window.location.replace("doner-account.html"); return; }
+  if (!loggedIn && PROTECTED.includes(currentPage))  { window.location.replace("doner-login.html");   return; }
+})();

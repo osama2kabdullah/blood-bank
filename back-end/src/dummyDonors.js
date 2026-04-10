@@ -7,7 +7,7 @@ const districts = [
   "Narail", "Pabna", "Sirajganj", "Dinajpur", "Faridpur"
 ];
 
-const bloodGroups = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
+const blood_groups = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 
 const names = [
   "John", "Jane", "Ali", "Sara", "Mina", "Rafiq", "Nabila", "Tariq",
@@ -17,18 +17,17 @@ const names = [
 
 function getRandomDate(start, end) {
   const date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-  return date.toISOString().split("T")[0]; // YYYY-MM-DD
+  return date.toISOString().split("T")[0];
 }
 
-export const dummyDonors = [];
-
-for (let i = 1; i <= 100; i++) {
-  const name = `${names[Math.floor(Math.random() * names.length)]} ${names[Math.floor(Math.random() * names.length)]}`;
-  const phone = `0171${(10000000 + i).toString().padStart(7, "0")}`;
-  const password = "1234";
-  const blood_group = bloodGroups[Math.floor(Math.random() * bloodGroups.length)];
-  const location = districts[Math.floor(Math.random() * districts.length)];
-  const last_donation = getRandomDate(new Date(2023, 0, 1), new Date(2024, 2, 28));
-
-  dummyDonors.push({ name, phone, password, blood_group, location, last_donation });
+function rand(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
+
+export const dummyDonors = Array.from({ length: 500 }, (_, i) => ({
+  name:          `${rand(names)} ${rand(names)}`,
+  phone:         `0171${String(10000000 + i + 1).padStart(7, "0")}`,
+  blood_group:   rand(blood_groups),
+  location:      rand(districts),
+  last_donation: getRandomDate(new Date(2023, 0, 1), new Date(2024, 2, 28)),
+}));

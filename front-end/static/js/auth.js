@@ -1,99 +1,89 @@
-const API_BASE = "http://127.0.0.1:8787";
+// ============================================================
+// auth.js — Login & Register pages only.
+// Requires: script.js (API_BASE)
+// ============================================================
 
+// ── Register ──────────────────────────────────────────────────
 document.getElementById("registerForm")?.addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  const name = document.getElementById("name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const password = document.getElementById("password").value;
-  const confirmPassword = document.getElementById("confirmPassword").value;
-  const location = document.getElementById("location").value.trim();
-  const lastDonation = document.getElementById("lastDonation").value;
-  const bloodGroup = document.querySelector('input[name="bloodGroup"]:checked')?.value;
+  const name          = document.getElementById("name").value.trim();
+  const phone         = document.getElementById("phone").value.trim();
+  const password      = document.getElementById("password").value;
+  const confirmPass   = document.getElementById("confirmPassword").value;
+  const location      = document.getElementById("location").value.trim();
+  const lastDonation  = document.getElementById("lastDonation").value;
+  const blood_group   = document.querySelector('input[name="blood_group"]:checked')?.value;
 
-  // Basic client-side validation
-  if (!phone || !password || !location || !bloodGroup) {
+  if (!phone || !password || !location || !blood_group)
     return alert("Please fill in all required fields and select a blood group.");
-  }
-  if (password !== confirmPassword) {
+
+  if (password !== confirmPass)
     return alert("Passwords do not match.");
-  }
 
   const submitBtn = this.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
+  submitBtn.disabled    = true;
   submitBtn.textContent = "Registering...";
 
   try {
     const res = await fetch(`${API_BASE}/auth/donor/register-full`, {
-      method: "POST",
+      method:  "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: name || null,
+        name:          name || null,
         phone,
         password,
-        blood_group: bloodGroup,
+        blood_group,
         location,
-        last_donation: lastDonation || null
-      })
+        last_donation: lastDonation || null,
+      }),
     });
 
     const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Registration failed");
 
-    if (!res.ok) {
-      throw new Error(data.message || "Registration failed");
-    }
-
-    // Save token + user info to localStorage
     localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-
-    // Redirect to dashboard
+    localStorage.setItem("user",  JSON.stringify(data.user));
     window.location.href = "doner-account.html";
 
   } catch (err) {
     alert(err.message);
-    submitBtn.disabled = false;
+    submitBtn.disabled    = false;
     submitBtn.textContent = "Create Account";
   }
 });
 
+// ── Login ─────────────────────────────────────────────────────
 document.getElementById("loginForm")?.addEventListener("submit", async function (e) {
   e.preventDefault();
-  const phone = document.getElementById("phone").value.trim();
+
+  const phone    = document.getElementById("phone").value.trim();
   const password = document.getElementById("password").value;
 
-  if (!phone || !password) {
+  if (!phone || !password)
     return alert("Please enter both phone number and password.");
-  }
 
   const submitBtn = this.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
+  submitBtn.disabled    = true;
   submitBtn.textContent = "Logging in...";
 
   try {
     const res = await fetch(`${API_BASE}/auth/donor/login`, {
-      method: "POST",
+      method:  "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, password })
+      body: JSON.stringify({ phone, password }),
     });
 
     const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Login failed");
 
-    if (!res.ok) {
-      throw new Error(data.message || "Login failed");
-    }
-
-    // Save token + user info to localStorage
     localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-
-    // Redirect to dashboard
+    localStorage.setItem("user",  JSON.stringify(data.user));
     window.location.href = "doner-account.html";
 
   } catch (err) {
     alert(err.message);
-    submitBtn.disabled = false;
+    submitBtn.disabled    = false;
     submitBtn.textContent = "Login to Account";
   }
-
 });
