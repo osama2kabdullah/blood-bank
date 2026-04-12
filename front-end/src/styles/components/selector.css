@@ -78,7 +78,7 @@
 
 .selector--open 
 .selector__clear:hover {
-  background-color: var(--cds-hover-light-ui);
+  background-color: var(--cds-selected-ui);
   height: calc(2.5rem - 4px);
   margin-right: 2px;
 }

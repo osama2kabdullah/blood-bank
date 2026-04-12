@@ -49,6 +49,10 @@
   white-space: nowrap;
 }
 
+.header a:visited {
+  color: var(--cds-text-02);
+}
+
 .header__nav-item:hover {
   background-color: var(--cds-hover-ui);
   color: var(--cds-text-01);
@@ -67,6 +71,64 @@
   margin-left: auto;
 }
 
+.header .header__button:visited,
+.header__button {
+  color: var(--cds-text-04);
+}
+
+.header__button:hover {
+  text-decoration: none;
+  background-color: var(--cds-hover-ui);
+}
+
+.header__avatar-menu {
+  position: relative;
+}
+
+.header__avatar-button {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--cds-ui-03);
+  background: var(--cds-ui-02);
+  color: var(--cds-text-01);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.header__dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--cds-spacing-02));
+  min-width: 12rem;
+  background: var(--cds-ui-background);
+  border: 1px solid var(--cds-ui-03);
+  border-radius: calc(var(--cds-border-radius) + 0.125rem);
+  box-shadow: var(--cds-shadow-md);
+  z-index: 20;
+  padding: var(--cds-spacing-03) 0;
+}
+
+.header__dropdown-item {
+  display: block;
+  width: 100%;
+  padding: calc(var(--cds-spacing-02) - 2px) var(--cds-spacing-04);
+  color: var(--cds-text-01);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.header__dropdown-item:hover {
+  background: var(--cds-hover-ui);
+}
+
+.header__dropdown-item--button {
+  width: 100%;
+}
+
 .header__icon-btn {
   display: flex;
   align-items: center;
@@ -80,4 +142,215 @@
 .header__icon-btn:hover {
   background-color: var(--cds-hover-ui);
   color: var(--cds-icon-01);
+}
+
+.header__mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.25rem;
+  background: transparent;
+  border: none;
+  color: var(--cds-text-01);
+  cursor: pointer;
+}
+
+/* ===== Drawer Styles ===== */
+.header__drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--cds-overlay-01);
+  z-index: 120;
+  animation: fade-in var(--cds-duration-moderate-02) var(--cds-entrance) forwards;
+}
+
+.header__drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: min(320px, 85vw);
+  background: var(--cds-ui-background);
+  box-shadow: var(--cds-shadow-lg);
+  transform: translateX(100%);
+  transition: transform var(--cds-duration-moderate-02) var(--cds-entrance);
+  z-index: 125;
+  display: flex;
+  flex-direction: column;
+}
+
+.header__drawer--open {
+  transform: translateX(0);
+}
+
+.header__drawer-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cds-spacing-03);
+  border-bottom: 1px solid var(--cds-ui-03);
+}
+
+.header__drawer-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--cds-spacing-03);
+  margin-left: var(--cds-spacing-05);
+}
+
+.header__drawer-logo {
+  width: 2.25rem;
+  height: 2.25rem;
+  object-fit: contain;
+  border-radius: var(--cds-radius-sm);
+}
+
+.header__drawer-brand-title {
+  display: block;
+  font-weight: 600;
+  color: var(--cds-text-01);
+}
+
+.header__drawer-close {
+  width: 3rem;
+  height: 3rem;
+  margin-right: var(--cds-spacing-05);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--cds-text-01);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.header__drawer-content {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--cds-spacing-04);
+  margin-inline: var(--cds-spacing-05);
+}
+
+.header__mobile-links,
+.header__mobile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-02);
+}
+
+.header__mobile-link,
+.header__mobile-action {
+  display: block;
+  width: 100%;
+  padding: var(--cds-spacing-03) var(--cds-spacing-04);
+  border-radius: var(--cds-border-radius);
+  color: var(--cds-text-01);
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.header__mobile-link:hover,
+.header__mobile-action:hover,
+.header__mobile-action--button:hover {
+  background: var(--cds-hover-ui);
+}
+
+.header__mobile-link--active {
+  color: var(--cds-text-01);
+}
+
+.header .header__mobile-action--primary:visited,
+.header .header__mobile-action--primary {
+  background-color: var(--cds-interactive-01);
+  color: var(--cds-text-04);
+}
+
+.header__mobile-action--button {
+  background: transparent;
+  border: none;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+}
+
+/* ===== Keyframe Animations (using Carbon tokens) ===== */
+@keyframes slide-up-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(var(--cds-spacing-03));
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===== Responsive (Mobile ≤ 768px) ===== */
+@media (max-width: 768px) {
+  .header__nav {
+    display: none;
+  }
+
+  /* Hide the Login link (it will be inside drawer) */
+  .header__actions .header__nav-item {
+    display: none;
+  }
+
+  /* Keep Register button visible in top bar */
+  .header__actions .header__button {
+    display: inline-flex;
+  }
+
+  /* Hide avatar menu on mobile – moved to drawer */
+  .header__avatar-menu {
+    display: none;
+  }
+
+  /* Show hamburger */
+  .header__mobile-toggle {
+    display: inline-flex;
+  }
+
+  /* Animate drawer items when drawer is open */
+  .header__drawer--open .header__mobile-link,
+  .header__drawer--open .header__mobile-action {
+    animation: slide-up-fade var(--cds-duration-moderate-01) var(--cds-entrance) forwards;
+    opacity: 0;
+  }
+
+  /* Staggered delays using fast duration tokens */
+  .header__drawer--open .header__mobile-link:nth-child(1),
+  .header__drawer--open .header__mobile-action:nth-child(1) {
+    animation-delay: calc(var(--cds-duration-fast-02) * 0.2);
+  }
+  .header__drawer--open .header__mobile-link:nth-child(2),
+  .header__drawer--open .header__mobile-action:nth-child(2) {
+    animation-delay: calc(var(--cds-duration-fast-02) * 0.5);
+  }
+  .header__drawer--open .header__mobile-link:nth-child(3),
+  .header__drawer--open .header__mobile-action:nth-child(3) {
+    animation-delay: calc(var(--cds-duration-fast-02) * 0.8);
+  }
+  .header__drawer--open .header__mobile-link:nth-child(4),
+  .header__drawer--open .header__mobile-action:nth-child(4) {
+    animation-delay: calc(var(--cds-duration-fast-02) * 1.1);
+  }
+
+  /* Backdrop fade animation uses slow duration for smoothness */
+  .header__drawer-backdrop {
+    animation: fade-in var(--cds-duration-slow-01) var(--cds-entrance) forwards;
+  }
 }
