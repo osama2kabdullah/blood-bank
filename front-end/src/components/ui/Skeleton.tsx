@@ -1,3 +1,5 @@
+import '@/styles/components/common.css'
+import '@/styles/components/card.css'
 import { cn } from '@utils/cn'
 
 interface SkeletonProps {

@@ -11,8 +11,7 @@ export function Footer() {
         color: 'var(--cds-text-02)',
       }}
     >
-      <span>CF React Boilerplate — Production-ready for Cloudflare Pages</span>
-      <span>v{__APP_VERSION__}</span>
+      <p>❤️ Developed by <a href="https://www.linkedin.com/in/md-abdullah-9121b5228/" target="_blank" rel="noopener noreferrer">Osama Abdullah</a></p>
     </footer>
   )
 }

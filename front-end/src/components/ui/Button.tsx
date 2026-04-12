@@ -1,3 +1,4 @@
+import '@/styles/components/button.css'
 import { cn } from '@utils/cn'
 import { Spinner } from './Spinner'
 import type { ButtonHTMLAttributes } from 'react'

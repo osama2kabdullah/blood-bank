@@ -1,3 +1,4 @@
+import '@/styles/components/common.css'
 import { cn } from '@utils/cn'
 import type { HTMLAttributes } from 'react'
 

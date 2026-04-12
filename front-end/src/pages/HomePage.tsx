@@ -1,98 +1,196 @@
-import { Link } from 'react-router-dom'
+import { useMemo, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { PageShell } from '@components/layout'
-import { Button, Card, CardTitle, CardSubtitle, Tag } from '@components/ui'
+import { Spinner } from '@components/ui'
 import { useDocumentTitle } from '@hooks/useDocumentTitle'
+import { DonorFilterForm } from '@components/features/donors/DonorFilterForm'
+import { DonorCard } from '@components/features/donors/DonorCard'
+import type { DonorFilterValues } from '@components/features/donors/DonorFilterForm'
+import { useFetch } from '@hooks/useFetch'
+import '@styles/pages/home.css'
+import '@styles/components/pagination.css'
 
-const FEATURES = [
-  { icon: '⚡', title: 'Vite + React 18', desc: 'Blazing fast HMR and build with ESNext target.', tag: 'Performance', color: 'blue' as const },
-  { icon: '🔷', title: 'TypeScript', desc: 'Strict types throughout — no anys, no surprises.', tag: 'DX', color: 'cyan' as const },
-  { icon: '🧱', title: 'IBM Carbon Design', desc: 'Production-grade design tokens. Zero CSS framework imports.', tag: 'Design', color: 'teal' as const },
-  { icon: '🌐', title: 'Cloudflare Pages', desc: 'Edge-ready build config with proper SPA fallback routing.', tag: 'Deploy', color: 'green' as const },
-  { icon: '📦', title: 'Code Splitting', desc: 'Every page is a separate chunk. Loaded on demand.', tag: 'Perf', color: 'purple' as const },
-  { icon: '📡', title: 'PWA Ready', desc: 'Offline support, installable, background sync via Workbox.', tag: 'PWA', color: 'magenta' as const },
-]
+const API_BASE = 'http://127.0.0.1:8787'
+
+interface Donor {
+  id: number
+  name: string
+  blood_group: string
+  location: string
+  phone?: string
+}
+
+interface ApiResponse {
+  page: number
+  limit: number
+  total: number
+  total_pages: number
+  has_next: boolean
+  has_prev: boolean
+  data: Donor[]
+}
 
 export default function HomePage() {
-  useDocumentTitle('Home')
+  useDocumentTitle('Find Donors')
+
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const filters = useMemo<DonorFilterValues>(() => {
+    const blood_group = searchParams.get('blood_group') ?? 'all'
+    const location = searchParams.get('location')
+
+    return {
+      blood_group,
+      location: location === null || location === '' ? null : location,
+    }
+  }, [searchParams])
+
+  const currentPage = useMemo(() => {
+    const page = Number(searchParams.get('page') ?? '1')
+    return Number.isFinite(page) && page > 0 ? page : 1
+  }, [searchParams])
+
+  const fetchKey = `donors-${filters.blood_group}-${filters.location ?? ''}-${currentPage}`
+
+  const { data: apiData, isLoading, isError } = useFetch<ApiResponse>(
+    fetchKey,
+    () => {
+      const params = new URLSearchParams()
+      if (filters.blood_group && filters.blood_group !== 'all') {
+        params.append('blood_group', filters.blood_group)
+      }
+      if (filters.location) {
+        params.append('location', filters.location)
+      }
+      params.append('page', currentPage.toString())
+
+      return fetch(`${API_BASE}/donors?${params.toString()}`).then((res) => {
+        if (!res.ok) throw new Error(`API error: ${res.status}`)
+        return res.json().then((data) => ({ data }))
+      })
+    },
+    { cacheTtl: 60_000 },
+  )
+
+  const handleFilterSubmit = useCallback(
+    (values: DonorFilterValues) => {
+      const params = new URLSearchParams()
+
+      if (values.blood_group && values.blood_group !== 'all') {
+        params.set('blood_group', values.blood_group)
+      }
+      if (values.location) {
+        params.set('location', values.location)
+      }
+      params.set('page', '1')
+
+      setSearchParams(params)
+    },
+    [setSearchParams],
+  )
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      if (!apiData) return
+
+      const nextPage = Math.max(1, Math.min(page, apiData.total_pages))
+      const params = new URLSearchParams(searchParams)
+
+      if (nextPage > 1) {
+        params.set('page', nextPage.toString())
+      } else {
+        params.delete('page')
+      }
+
+      setSearchParams(params)
+    },
+    [apiData, searchParams, setSearchParams],
+  )
 
   return (
     <PageShell>
       <div className="container">
-        {/* Hero */}
-        <section style={{ paddingBlock: 'var(--cds-spacing-11)', maxWidth: '42rem' }}>
-          <div style={{ marginBottom: 'var(--cds-spacing-05)' }}>
-            <Tag color="blue">Production Boilerplate</Tag>
-          </div>
-          <h1 style={{ marginBottom: 'var(--cds-spacing-06)', fontWeight: 300, lineHeight: 1.2 }}>
-            React + Cloudflare Pages
-          </h1>
-          <p style={{
-            fontSize: 'var(--cds-productive-heading-03-font-size)',
-            color: 'var(--cds-text-02)',
-            lineHeight: 1.6,
-            marginBottom: 'var(--cds-spacing-07)',
-          }}>
-            A production-grade React boilerplate engineered for performance,
-            scalability, and edge deployment on Cloudflare Pages.
-          </p>
-          <div className="flex gap-3">
-            <Link to="/dashboard" style={{ textDecoration: 'none' }}>
-              <Button variant="primary">View Dashboard</Button>
-            </Link>
-            <Link to="/posts" style={{ textDecoration: 'none' }}>
-              <Button variant="tertiary">Browse Posts</Button>
-            </Link>
+
+        {/* Filter */}
+        <section className="filter-section">
+          <h2>Find Donors</h2>
+          <DonorFilterForm
+            initialValues={filters}
+            onSubmit={handleFilterSubmit}
+            isLoading={isLoading}
+          />
+
+          <div className="result-summary">
+            {isError ? (
+              <p style={{ color: 'var(--cds-support-01)', margin: 0 }}>
+                Failed to load donors. Please try again.
+              </p>
+            ) : isLoading ? (
+              <p>Searching…</p>
+            ) : apiData ? (
+              <p>
+                Showing <strong>{apiData.data.length}</strong> of{' '}
+                <strong>{apiData.total}</strong> donors
+                {filters.location && <> in <strong>{filters.location}</strong></>}
+                {filters.blood_group !== 'all' && <> · Blood group <strong>{filters.blood_group}</strong></>}
+              </p>
+            ) : null}
           </div>
         </section>
 
         <hr className="divider" />
 
-        {/* Features grid */}
-        <section style={{ paddingBlock: 'var(--cds-spacing-09)' }}>
-          <h2 style={{ fontWeight: 300, marginBottom: 'var(--cds-spacing-07)' }}>
-            What&apos;s included
-          </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 'var(--cds-spacing-05)',
-          }}>
-            {FEATURES.map((f) => (
-              <Card key={f.title}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--cds-spacing-05)' }}>
-                  <span style={{ fontSize: '1.5rem' }} aria-hidden="true">{f.icon}</span>
-                  <Tag color={f.color}>{f.tag}</Tag>
-                </div>
-                <CardTitle style={{ marginBottom: 'var(--cds-spacing-03)' }}>{f.title}</CardTitle>
-                <CardSubtitle>{f.desc}</CardSubtitle>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Stack overview */}
-        <section style={{ paddingBlock: 'var(--cds-spacing-07)', paddingBottom: 'var(--cds-spacing-11)' }}>
-          <Card style={{ background: 'var(--cds-ui-02)' }}>
-            <h3 style={{ fontWeight: 400, marginBottom: 'var(--cds-spacing-05)' }}>Architecture at a glance</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--cds-spacing-05)' }}>
-              {[
-                ['Build Tool', 'Vite 6'],
-                ['Framework', 'React 18'],
-                ['Language', 'TypeScript 5'],
-                ['Routing', 'React Router v6'],
-                ['State', 'Zustand 4'],
-                ['Styling', 'Raw CSS + Carbon Tokens'],
-                ['PWA', 'Workbox / vite-plugin-pwa'],
-                ['Deploy', 'Cloudflare Pages'],
-              ].map(([label, value]) => (
-                <div key={label}>
-                  <p style={{ fontSize: 'var(--cds-label-01-font-size)', color: 'var(--cds-text-02)', marginBottom: '2px', letterSpacing: '0.32px' }}>{label}</p>
-                  <p style={{ fontWeight: 600, fontSize: 'var(--cds-body-short-01-font-size)' }}>{value}</p>
-                </div>
+        {/* Cards */}
+        <section className="cards-section">
+          {isLoading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--cds-spacing-11)' }}>
+              <Spinner size="lg" />
+            </div>
+          ) : isError ? (
+            <div style={{ padding: 'var(--cds-spacing-09)', textAlign: 'center', color: 'var(--cds-text-02)' }}>
+              <p>Something went wrong. Please try again.</p>
+            </div>
+          ) : apiData && apiData.data.length > 0 ? (
+            <div className="cards-grid">
+              {apiData.data.map((donor) => (
+                <DonorCard key={donor.id} donor={donor} />
               ))}
             </div>
-          </Card>
+          ) : apiData && apiData.data.length === 0 ? (
+            <div style={{ padding: 'var(--cds-spacing-09)', textAlign: 'center', color: 'var(--cds-text-02)' }}>
+              <p style={{ marginBottom: 'var(--cds-spacing-03)' }}>No donors found.</p>
+              <p style={{ fontSize: 'var(--cds-label-01-font-size)' }}>Try adjusting the blood group or location filters.</p>
+            </div>
+          ) : null}
         </section>
+
+        {/* Pagination */}
+        {apiData && apiData.total_pages > 1 && (
+          <section className="pagination-section">
+            <div className="pagination">
+              <button
+                className="btn btn--secondary btn--sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1 || isLoading}
+              >
+                ← Previous
+              </button>
+
+              <span className="pagination-info">
+                Page <strong>{currentPage}</strong> of <strong>{apiData.total_pages}</strong>
+              </span>
+
+              <button
+                className="btn btn--secondary btn--sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === apiData.total_pages || isLoading}
+              >
+                Next →
+              </button>
+            </div>
+          </section>
+        )}
+
       </div>
     </PageShell>
   )

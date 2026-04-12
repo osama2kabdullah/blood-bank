@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.svg', 'robots.txt'],
+        includeAssets: ['favicon.ico', 'robots.txt'],
         manifest: {
           name: 'CF React Boilerplate',
           short_name: 'CFReact',
@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
           display: 'standalone',
           start_url: '/',
           icons: [
-            { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+            { src: '/icons/apple-touch-icon.png', sizes: '192x192', type: 'image/png' },
             { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
           ],
         },

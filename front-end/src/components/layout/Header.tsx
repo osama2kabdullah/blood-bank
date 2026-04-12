@@ -1,6 +1,8 @@
+import '@/styles/components/header.css'
 import { NavLink, Link } from 'react-router-dom'
 import { useTheme } from '@hooks/useTheme'
 import { cn } from '@utils/cn'
+import logo from '@/assets/icons/logo.png'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Home', end: true },
@@ -15,10 +17,12 @@ export function Header() {
   return (
     <header className="header">
       <Link to="/" className="header__name">
-        <svg width="20" height="20" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
-          <path d="M16 2L2 9v14l14 7 14-7V9L16 2zm0 2.4l11.6 5.8L16 16 4.4 10.2 16 4.4zM4 11.8l11 5.5V27L4 21.5V11.8zm13 15.2V17.3l11-5.5V21.5L17 27z"/>
-        </svg>
-        CF React
+        <img
+          src={logo}
+          alt="Blood Bank BD logo"
+          style={{ width: 'clamp(1.75rem, 4vw, 2.5rem)', height: 'auto', objectFit: 'contain', flexShrink: 0 }}
+        />
+        Blood Bank BD
       </Link>
 
       <nav className="header__nav" aria-label="Main navigation">

@@ -1,0 +1,36 @@
+.card {
+  background-color: var(--cds-ui-01);
+  border: 1px solid var(--cds-ui-03);
+  padding: var(--cds-spacing-05);
+  position: relative;
+  transition: box-shadow var(--cds-duration-fast-01) var(--cds-standard);
+}
+
+.card--interactive { cursor: pointer; }
+
+.card--interactive:hover {
+  box-shadow: var(--cds-shadow-md);
+  border-color: var(--cds-ui-04);
+}
+
+.card--interactive:active {
+  background-color: var(--cds-active-ui);
+}
+
+.card__header {
+  border-bottom: 1px solid var(--cds-ui-03);
+  padding-bottom: var(--cds-spacing-05);
+  margin-bottom: var(--cds-spacing-05);
+}
+
+.card__title {
+  font-size: var(--cds-productive-heading-02-font-size);
+  font-weight: 600;
+  color: var(--cds-text-01);
+}
+
+.card__subtitle {
+  font-size: var(--cds-body-short-01-font-size);
+  color: var(--cds-text-02);
+  margin-top: var(--cds-spacing-02);
+}

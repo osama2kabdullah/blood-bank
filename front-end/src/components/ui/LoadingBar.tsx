@@ -1,3 +1,4 @@
+import '@/styles/components/common.css'
 import { useAppStore } from '@store/appStore'
 
 export function LoadingBar() {

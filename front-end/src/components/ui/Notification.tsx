@@ -1,3 +1,4 @@
+import '@/styles/components/common.css'
 import { cn } from '@utils/cn'
 
 type NotificationType = 'info' | 'success' | 'warning' | 'error'
