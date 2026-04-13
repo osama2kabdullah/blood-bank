@@ -82,3 +82,11 @@
   cursor: not-allowed;
   pointer-events: none;
 }
+a.btn:hover {
+  text-decoration: none;
+}
+a.btn--primary:visited  { color: var(--cds-text-04); }
+a.btn--secondary:visited { color: var(--cds-text-04); }
+a.btn--tertiary:visited  { color: var(--cds-interactive-01); }
+a.btn--ghost:visited     { color: var(--cds-interactive-01); }
+a.btn--danger:visited    { color: var(--cds-text-04); }

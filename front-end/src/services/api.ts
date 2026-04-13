@@ -1,47 +1,81 @@
-/**
- * API Service Layer — All UI → backend communication goes through here
- * Structured for edge deployment on Cloudflare Workers
- */
 import { http } from './http'
 
-/* ── Types ── */
-export interface User {
+/* ── Shared types ── */
+export interface Donor {
+  id: number
+  name: string
+  blood_group: string
+  location: string
+  phone?: string
+  last_donation?: string | null
+}
+
+export interface DonorSearchResult {
+  page: number
+  limit: number
+  total: number
+  total_pages: number
+  has_next: boolean
+  has_prev: boolean
+  data: Donor[]
+}
+
+export interface AuthUser {
   id: string
   name: string
-  email: string
-  role: string
-  createdAt: string
+  phone: string
 }
 
-export interface Post {
+export interface AuthDonor {
   id: number
-  title: string
-  body: string
-  userId: number
+  name: string
+  phone: string
+  blood_group: string
+  location: string
+  last_donation: string | null
 }
 
-export interface PaginatedResult<T> {
-  data: T[]
-  total: number
-  page: number
-  perPage: number
+export interface AuthResponse {
+  success: boolean
+  message: string
+  token: string
+  user: AuthUser
+  donor: AuthDonor | null
 }
 
-/* ── User service ── */
-export const userService = {
-  getAll: () => http.get<User[]>('/users'),
-  getById: (id: string) => http.get<User>(`/users/${id}`),
-  create: (payload: Omit<User, 'id' | 'createdAt'>) => http.post<User>('/users', payload),
-  update: (id: string, payload: Partial<User>) => http.patch<User>(`/users/${id}`, payload),
-  delete: (id: string) => http.delete<void>(`/users/${id}`),
+/* ── Auth service ── */
+export const authService = {
+  login: (payload: { phone: string; password: string }) =>
+    http.post<AuthResponse>('/auth/donor/login', payload),
+
+  registerFull: (payload: {
+    name: string
+    phone: string
+    password: string
+    blood_group: string
+    location: string
+    last_donation?: string
+  }) => http.post<AuthResponse>('/auth/donor/register-full', payload),
 }
 
-/* ── Post service — example with JSONPlaceholder ── */
-export const postService = {
-  getAll: (page = 1, limit = 10) =>
-    http.get<Post[]>(`https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${limit}`, { cache: 'default' }),
+/* ── Donor service ── */
+export const donorService = {
+  search: (params: {
+    blood_group?: string
+    location?: string | null
+    page?: number
+  }) => {
+    const query = new URLSearchParams()
+    if (params.blood_group && params.blood_group !== 'all') query.set('blood_group', params.blood_group)
+    if (params.location) query.set('location', params.location)
+    if (params.page && params.page > 1) query.set('page', String(params.page))
+    const path = query.toString() ? `/donors?${query}` : '/donors'
+    return http.get<DonorSearchResult>(path)
+  },
+
   getById: (id: number) =>
-    http.get<Post>(`https://jsonplaceholder.typicode.com/posts/${id}`),
-  create: (payload: Omit<Post, 'id'>) =>
-    http.post<Post>('https://jsonplaceholder.typicode.com/posts', payload),
+    http.get<Donor>(`/donors/${id}`),
+
+  update: (id: number, payload: Partial<Omit<Donor, 'id'>>) =>
+    http.patch<Donor>(`/donors/${id}`, payload),
 }

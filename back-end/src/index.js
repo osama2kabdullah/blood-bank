@@ -182,7 +182,7 @@ async function loginHandler(request, env, ctx, origin, allowedOrigin) {
       "SELECT * FROM users WHERE phone = ?"
     ).bind(phone).first();
 
-    if (!user) return jsonError("User not found", 404, origin, allowedOrigin);
+    if (!user) return jsonError("Invalid email or password", 401, origin, allowedOrigin);
 
     const isValid = await verifyPassword(password, user.password);
     if (!isValid) return jsonError("Invalid credentials", 401, origin, allowedOrigin);

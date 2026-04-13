@@ -12,9 +12,9 @@ import { RouteLoadingFallback } from './RouteLoadingFallback'
 /* Lazy page imports — each is a separate chunk */
 const HomePage       = lazy(() => import('@pages/HomePage'))
 const DashboardPage  = lazy(() => import('@pages/DashboardPage'))
-const PostsPage      = lazy(() => import('@pages/PostsPage'))
-const PostDetailPage = lazy(() => import('@pages/PostDetailPage'))
 const SettingsPage   = lazy(() => import('@pages/SettingsPage'))
+const LoginPage      = lazy(() => import('@pages/LoginPage'))
+const RegisterPage   = lazy(() => import('@pages/RegisterPage'))
 const NotFoundPage   = lazy(() => import('@pages/NotFoundPage'))
 
 function RootLayout() {
@@ -37,9 +37,9 @@ export const router = createBrowserRouter([
     children: [
       { index: true,        element: <HomePage /> },
       { path: 'dashboard',  element: <DashboardPage /> },
-      { path: 'posts',      element: <PostsPage /> },
-      { path: 'posts/:id',  element: <PostDetailPage /> },
       { path: 'settings',   element: <SettingsPage /> },
+      { path: 'login',      element: <LoginPage /> },
+      { path: 'register',   element: <RegisterPage /> },
       { path: '*',          element: <NotFoundPage /> },
     ],
   },

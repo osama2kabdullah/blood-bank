@@ -7,10 +7,9 @@ import { DonorFilterForm } from '@components/features/donors/DonorFilterForm'
 import { DonorCard } from '@components/features/donors/DonorCard'
 import type { DonorFilterValues } from '@components/features/donors/DonorFilterForm'
 import { useFetch } from '@hooks/useFetch'
+import { donorService } from '@services/api'
 import '@styles/pages/home.css'
 import '@styles/components/pagination.css'
-
-const API_BASE = 'http://127.0.0.1:8787'
 
 interface Donor {
   id: number
@@ -54,21 +53,11 @@ export default function HomePage() {
 
   const { data: apiData, isLoading, isError } = useFetch<ApiResponse>(
     fetchKey,
-    () => {
-      const params = new URLSearchParams()
-      if (filters.blood_group && filters.blood_group !== 'all') {
-        params.append('blood_group', filters.blood_group)
-      }
-      if (filters.location) {
-        params.append('location', filters.location)
-      }
-      params.append('page', currentPage.toString())
-
-      return fetch(`${API_BASE}/donors?${params.toString()}`).then((res) => {
-        if (!res.ok) throw new Error(`API error: ${res.status}`)
-        return res.json().then((data) => ({ data }))
-      })
-    },
+    () => donorService.search({
+      blood_group: filters.blood_group,
+      location: filters.location,
+      page: currentPage,
+    }),
     { cacheTtl: 60_000 },
   )
 

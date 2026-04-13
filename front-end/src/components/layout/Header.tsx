@@ -8,52 +8,64 @@ const NAV_ITEMS = [
   { to: '/', label: 'Home', end: true },
 ]
 
+function getAuthState() {
+  const token = localStorage.getItem('authToken')
+  const raw = localStorage.getItem('authUser')
+  if (!token || !raw) return { isLoggedIn: false, initials: '' }
+  try {
+    const user = JSON.parse(raw)
+    const initials = String(user.name ?? '')
+      .split(' ')
+      .filter(Boolean)
+      .map((w: string) => w[0].toUpperCase())
+      .slice(0, 2)
+      .join('')
+    return { isLoggedIn: true, initials: initials || '?' }
+  } catch {
+    return { isLoggedIn: false, initials: '' }
+  }
+}
+
 export function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [auth, setAuth] = useState(getAuthState)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const mobileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const savedToken = typeof window !== 'undefined' ? window.localStorage.getItem('authToken') : null
-    setIsLoggedIn(Boolean(savedToken))
-  }, [])
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (menuRef.current && !menuRef.current.contains(target)) {
+    const onAuth = () => setAuth(getAuthState())
+    const onClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setIsMenuOpen(false)
       }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(target)) {
-        setIsMobileMenuOpen(false)
-      }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    window.addEventListener('auth-change', onAuth)
+    document.addEventListener('mousedown', onClickOutside)
+    return () => {
+      window.removeEventListener('auth-change', onAuth)
+      document.removeEventListener('mousedown', onClickOutside)
+    }
   }, [])
 
   const handleLogout = () => {
-    window.localStorage.removeItem('authToken')
-    setIsLoggedIn(false)
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('authUser')
+    window.dispatchEvent(new Event('auth-change'))
     setIsMenuOpen(false)
-    setIsMobileMenuOpen(false)
+    setIsMobileOpen(false)
   }
 
-  const userInitials = 'JD'
+  const closeDrawer = () => setIsMobileOpen(false)
 
   return (
     <header className="header">
+      {/* Brand */}
       <Link to="/" className="header__name">
-        <img
-          src={logo}
-          alt="Blood Bank BD logo"
-          style={{ width: 'clamp(1.75rem, 4vw, 2.5rem)', height: 'auto', objectFit: 'contain', flexShrink: 0 }}
-        />
+        <img src={logo} alt="Blood Bank BD" className="header__logo" />
         Blood Bank BD
       </Link>
 
+      {/* Desktop nav */}
       <nav className="header__nav" aria-label="Main navigation">
         {NAV_ITEMS.map(({ to, label, end }) => (
           <NavLink
@@ -67,180 +79,130 @@ export function Header() {
             {label}
           </NavLink>
         ))}
-        {isLoggedIn && (
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              cn('header__nav-item', isActive && 'header__nav-item--active')
-            }
-          >
-            Dashboard
-          </NavLink>
-        )}
       </nav>
 
+      {/* Desktop actions */}
       <div className="header__actions">
-        {!isLoggedIn ? (
+        {auth.isLoggedIn ? (
+          <div className="header__avatar-menu" ref={menuRef}>
+            <button
+              type="button"
+              className="header__avatar-btn"
+              onClick={() => setIsMenuOpen((o) => !o)}
+              aria-expanded={isMenuOpen}
+              aria-haspopup="menu"
+            >
+              {auth.initials}
+            </button>
+
+            {isMenuOpen && (
+              <div className="header__dropdown" role="menu">
+                <Link to="/dashboard" className="header__dropdown-item" onClick={() => setIsMenuOpen(false)}>
+                  Dashboard
+                </Link>
+                <Link to="/settings" className="header__dropdown-item" onClick={() => setIsMenuOpen(false)}>
+                  Settings
+                </Link>
+                <hr className="header__dropdown-divider" />
+                <button type="button" className="header__dropdown-item header__dropdown-item--danger" onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
           <>
             <NavLink
-              key={"/login"}
-              to={"/login"}
+              to="/login"
               className={({ isActive }) =>
                 cn('header__nav-item', isActive && 'header__nav-item--active')
               }
             >
               Login
             </NavLink>
-            <Link to="/register" className="header__button btn btn--primary">
+            <Link to="/register" className="btn btn--primary btn--sm">
               Register
             </Link>
           </>
-        ) : (
-          <div className="header__avatar-menu" ref={menuRef}>
-            <button
-              type="button"
-              className="header__avatar-button"
-              onClick={() => setIsMenuOpen((open) => !open)}
-              aria-expanded={isMenuOpen}
-              aria-haspopup="menu"
-            >
-              {userInitials}
-            </button>
-            {isMenuOpen && (
-              <div className="header__dropdown" role="menu">
-                <Link
-                  to="/dashboard"
-                  className="header__dropdown-item"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/settings"
-                  className="header__dropdown-item"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Settings
-                </Link>
-                <button
-                  type="button"
-                  className="header__dropdown-item header__dropdown-item--button"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
         )}
+
+        {/* Hamburger */}
         <button
           type="button"
-          className="header__mobile-toggle"
-          aria-label={isMobileMenuOpen ? 'Close navigation' : 'Open navigation'}
-          aria-expanded={isMobileMenuOpen}
-          aria-controls="mobile-navigation"
-          onClick={() => setIsMobileMenuOpen((open) => !open)}
+          className="header__hamburger"
+          aria-label={isMobileOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isMobileOpen}
+          onClick={() => setIsMobileOpen((o) => !o)}
         >
-          <span aria-hidden="true">☰</span>
+          <span aria-hidden="true">{isMobileOpen ? '✕' : '☰'}</span>
         </button>
       </div>
 
-      {isMobileMenuOpen && (
+      {/* Mobile drawer */}
+      {isMobileOpen && (
         <>
-          <div
-            className="header__drawer-backdrop"
-            onClick={() => setIsMobileMenuOpen(false)}
-            aria-hidden="true"
-          />
-          <aside
-            className={cn('header__drawer', isMobileMenuOpen && 'header__drawer--open')}
-            id="mobile-navigation"
-            aria-label="Mobile navigation drawer"
-            ref={mobileMenuRef}
-          >
-            <div className="header__drawer-brand-row">
+          <div className="header__backdrop" onClick={closeDrawer} aria-hidden="true" />
+          <aside className="header__drawer" aria-label="Mobile navigation">
+
+            <div className="header__drawer-header">
               <div className="header__drawer-brand">
-                <img src={logo} alt="Blood Bank BD" className="header__drawer-logo" />
-                <div>
-                  <span className="header__drawer-brand-title">Blood Bank BD</span>
-                </div>
+                <img src={logo} alt="Blood Bank BD" className="header__logo" />
+                <span className="header__drawer-brand-name">Blood Bank BD</span>
               </div>
-              <button
-                type="button"
-                className="header__drawer-close"
-                onClick={() => setIsMobileMenuOpen(false)}
-                aria-label="Close navigation drawer"
-              >
-                ×
+              <button type="button" className="header__drawer-close" onClick={closeDrawer} aria-label="Close menu">
+                ✕
               </button>
             </div>
 
-            <div className="header__drawer-content">
-              <div className="header__mobile-links">
-                {NAV_ITEMS.map(({ to, label, end }) => (
-                  <NavLink
-                    key={to}
-                    to={to}
-                    end={end}
-                    className={({ isActive }) =>
-                      cn('header__mobile-link', isActive && 'header__mobile-link--active')
-                    }
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {label}
-                  </NavLink>
-                ))}
-                {isLoggedIn && (
-                  <NavLink
-                    to="/dashboard"
-                    className={({ isActive }) =>
-                      cn('header__mobile-link', isActive && 'header__mobile-link--active')
-                    }
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Dashboard
-                  </NavLink>
-                )}
-              </div>
+            <nav className="header__drawer-nav">
+              {NAV_ITEMS.map(({ to, label, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  className={({ isActive }) =>
+                    cn('header__drawer-item', isActive && 'header__drawer-item--active')
+                  }
+                  onClick={closeDrawer}
+                >
+                  {label}
+                </NavLink>
+              ))}
+              {auth.isLoggedIn && (
+                <NavLink
+                  to="/dashboard"
+                  className={({ isActive }) =>
+                    cn('header__drawer-item', isActive && 'header__drawer-item--active')
+                  }
+                  onClick={closeDrawer}
+                >
+                  Dashboard
+                </NavLink>
+              )}
+            </nav>
 
-              <div className="header__mobile-actions">
-                {!isLoggedIn ? (
-                  <>
-                    <Link
-                      to="/login"
-                      className="header__mobile-action"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      to="/register"
-                      className="header__mobile-action header__mobile-action--primary"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Register
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/settings"
-                      className="header__mobile-action"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Settings
-                    </Link>
-                    <button
-                      type="button"
-                      className="header__mobile-action header__mobile-action--button"
-                      onClick={handleLogout}
-                    >
-                      Logout
-                    </button>
-                  </>
-                )}
-              </div>
+            <div className="header__drawer-footer">
+              {auth.isLoggedIn ? (
+                <>
+                  <Link to="/settings" className="header__drawer-item" onClick={closeDrawer}>
+                    Settings
+                  </Link>
+                  <button type="button" className="header__drawer-item header__drawer-item--danger" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="header__drawer-item" onClick={closeDrawer}>
+                    Login
+                  </Link>
+                  <Link to="/register" className="btn btn--primary w-full" onClick={closeDrawer}>
+                    Register
+                  </Link>
+                </>
+              )}
             </div>
+
           </aside>
         </>
       )}

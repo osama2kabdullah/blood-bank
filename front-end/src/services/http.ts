@@ -69,9 +69,10 @@ async function request<T>(
     clearTimeout(timeoutId)
 
     if (!response.ok) {
-      let errorData: unknown
+      let errorData: { message?: string } | null = null
       try { errorData = await response.json() } catch { errorData = null }
-      throw new HttpError(response.status, `HTTP ${response.status}: ${response.statusText}`, errorData)
+      const message = errorData?.message ?? `HTTP ${response.status}: ${response.statusText}`
+      throw new HttpError(response.status, message, errorData)
     }
 
     const contentType = response.headers.get('content-type') ?? ''
