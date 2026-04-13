@@ -447,69 +447,6 @@ async function registerFullHandler(request, env, ctx, origin, allowedOrigin) {
   }
 }
 
-routes["/user-donation-info"] = infoHandler;
-async function infoHandler(request, env, ctx, origin, allowedOrigin) {
-  if (request.method !== "GET" && request.method !== "PUT") {
-    return jsonError("Method not allowed", 405, origin, allowedOrigin);
-  }
-
-  const authHeader = request.headers.get("Authorization") || "";
-  const token = authHeader.replace("Bearer ", "");
-  const userData = await verifyToken(token, env.JWT_SECRET);
-  if (!userData) return jsonError("Unauthorized", 401, origin, allowedOrigin);
-
-  try {
-    if (request.method === "GET") {
-      const user = await env.DB.prepare(
-        "SELECT id, name, phone FROM users WHERE id = ?"
-      ).bind(userData.userId).first();
-
-      if (!user) return jsonError("User not found", 404, origin, allowedOrigin);
-
-      const donor = await env.DB.prepare(
-        "SELECT blood_group, location, last_donation FROM donors WHERE claimed_by_user_id = ?"
-      ).bind(userData.userId).first();
-
-      return jsonResponse({
-        success: true,
-        donor: donor || null
-      });
-    }
-
-    if (request.method === "PUT") {
-      const body = await request.json();
-      const { blood_group, location, last_donation } = body;
-
-      const updates = [];
-      const params = [];
-
-      if (blood_group !== undefined) {
-        updates.push("blood_group = ?");
-        params.push(blood_group.toUpperCase());
-      }
-      if (location !== undefined) {
-        updates.push("location = ?");
-        params.push(location);
-      }
-      if (last_donation !== undefined) {
-        updates.push("last_donation = ?");
-        params.push(last_donation);
-      }
-
-      if (updates.length === 0) return jsonError("No fields to update", 400, origin, allowedOrigin);
-
-      params.push(userData.userId);
-      const updateQuery = `UPDATE donors SET ${updates.join(", ")} WHERE claimed_by_user_id = ?`;
-
-      await env.DB.prepare(updateQuery).bind(...params).run();
-
-      return jsonResponse({ success: true, message: "Info updated successfully" });
-    }
-  } catch (err) {
-    return jsonError("Failed to process request", 500, origin, allowedOrigin, err.message);
-  }
-}
-
 routes["/me"] = meHandler;
 async function meHandler(request, env, ctx, origin, allowedOrigin) {
   if (request.method !== "GET" && request.method !== "PUT") {
