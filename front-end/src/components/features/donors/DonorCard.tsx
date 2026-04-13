@@ -2,20 +2,15 @@ import '@/styles/components/card.css'
 import '@/styles/components/common.css'
 import { Card, CardTitle, Tag } from '@components/ui'
 import { MapPin, Phone } from 'lucide-react'
-
-interface Donor {
-  id: number
-  name: string
-  blood_group: string
-  location: string
-  phone?: string
-}
+import type { ReactNode } from 'react'
+import type { Donor } from '@services/api'
 
 interface DonorCardProps {
   donor: Donor
+  actions?: ReactNode
 }
 
-export function DonorCard({ donor }: DonorCardProps) {
+export function DonorCard({ donor, actions }: DonorCardProps) {
   return (
     <Card>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--cds-spacing-04)' }}>
@@ -36,6 +31,12 @@ export function DonorCard({ donor }: DonorCardProps) {
           </div>
         )}
       </div>
+
+      {actions && (
+        <div className="donor-card__actions">
+          {actions}
+        </div>
+      )}
     </Card>
   )
 }

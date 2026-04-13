@@ -6,6 +6,7 @@ import { Button, Card, CardTitle, CardSubtitle } from '@components/ui'
 import { RadioGroup } from '@components/ui/radio-group'
 import { Selector, type SelectorOption } from '@components/ui/selector'
 import { useDocumentTitle } from '@hooks/useDocumentTitle'
+import { useSeoMeta } from '@hooks/useSeoMeta'
 import LOCATIONS from '@store/locations'
 import BLOOD_GROUPS from '@store/bloodGroups'
 import '@styles/components/form.css'
@@ -26,6 +27,11 @@ function getErrorMessage(error: unknown) {
 
 export default function RegisterPage() {
   useDocumentTitle('Register')
+  useSeoMeta({
+    title: 'Register',
+    description: 'Create an account on Blood Bank Bangaldesh and start adding blood donors.',
+    noIndex: true,
+  })
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -79,7 +85,7 @@ export default function RegisterPage() {
         <Card className="auth-card">
           <div className="auth-card-header">
             <CardTitle>Register as a donor</CardTitle>
-            <CardSubtitle>Join Blood Bank BD and start helping patients find blood quickly.</CardSubtitle>
+            <CardSubtitle>Join Blood Bank Bangaldesh and start helping patients find blood quickly.</CardSubtitle>
           </div>
 
           <form className="form auth-form" onSubmit={handleSubmit}>

@@ -8,6 +8,8 @@ export interface Donor {
   location: string
   phone?: string
   last_donation?: string | null
+  added_by_user_id?: string | number | null
+  claimed_by_user_id?: string | number | null
 }
 
 export interface DonorSearchResult {
@@ -105,6 +107,26 @@ export const donorService = {
     const path = query.toString() ? `/my-donors?${query}` : '/my-donors'
     return http.get<DonorSearchResult>(path)
   },
+
+  add: (payload: {
+    name?: string
+    phone: string
+    blood_group: string
+    location: string
+    last_donation?: string | null
+  }) => http.post<ApiMessageResponse>('/donors/add', payload),
+
+  edit: (payload: {
+    donor_id: number
+    name?: string
+    phone?: string
+    blood_group?: string
+    location?: string
+    last_donation?: string | null
+  }) => http.put<ApiMessageResponse>('/donors/edit', payload),
+
+  delete: (payload: { donor_id: number }) =>
+    http.delete<ApiMessageResponse>('/donors/delete', { body: payload }),
 
   getById: (id: number) =>
     http.get<Donor>(`/donors/${id}`),

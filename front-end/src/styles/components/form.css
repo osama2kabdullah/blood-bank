@@ -196,7 +196,7 @@
 .radio-group__option--selected {
   background-color: var(--cds-interactive-01);
   border-color: var(--cds-interactive-01);
-  color: var(--cds-text-04);
+  color: var(--cds-text-on-color);
 }
 
 .radio-group__option:not(.radio-group__option--selected):hover {

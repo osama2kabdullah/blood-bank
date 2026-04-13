@@ -1,6 +1,6 @@
 import '@/styles/components/header.css'
 import { useState, useEffect, useRef } from 'react'
-import { NavLink, Link, useLocation } from 'react-router-dom'
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '@utils/cn'
 import logo from '@/assets/icons/logo.png'
 
@@ -28,6 +28,7 @@ function getAuthState() {
 
 export function Header() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [auth, setAuth] = useState(getAuthState)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -54,6 +55,7 @@ export function Header() {
     window.dispatchEvent(new Event('auth-change'))
     setIsMenuOpen(false)
     setIsMobileOpen(false)
+    navigate('/')
   }
 
   const closeDrawer = () => setIsMobileOpen(false)
@@ -70,8 +72,8 @@ export function Header() {
     <header className="header">
       {/* Brand */}
       <Link to="/" className="header__name">
-        <img src={logo} alt="Blood Bank BD" className="header__logo" />
-        Blood Bank BD
+        <img src={logo} alt="Blood Bank Bangaldesh" className="header__logo" />
+        Blood Bank Bangaldesh
       </Link>
 
       {/* Desktop nav */}
@@ -155,8 +157,8 @@ export function Header() {
 
             <div className="header__drawer-header">
               <div className="header__drawer-brand">
-                <img src={logo} alt="Blood Bank BD" className="header__logo" />
-                <span className="header__drawer-brand-name">Blood Bank BD</span>
+                <img src={logo} alt="Blood Bank Bangaldesh" className="header__logo" />
+                <span className="header__drawer-brand-name">Blood Bank Bangaldesh</span>
               </div>
               <button type="button" className="header__drawer-close" onClick={closeDrawer} aria-label="Close menu">
                 ✕

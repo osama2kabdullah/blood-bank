@@ -3,6 +3,7 @@ import '@/styles/components/card.css'
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useDocumentTitle } from '@hooks/useDocumentTitle'
+import { useSeoMeta } from '@hooks/useSeoMeta'
 import { PageShell } from '@components/layout'
 import AccountSettings from '@components/features/dashboard/AccountSettings'
 import { MyDonors } from '@components/features/dashboard/MyDonors'
@@ -32,6 +33,11 @@ function getTabQueryValue(tab: Tab): string {
 
 export default function DashboardPage() {
   useDocumentTitle('Dashboard')
+  useSeoMeta({
+    title: 'Dashboard',
+    description: 'Manage your donor profile and donors list on Blood Bank Bangaldesh.',
+    noIndex: true,
+  })
   const [searchParams, setSearchParams] = useSearchParams()
 
   const user = getUser()

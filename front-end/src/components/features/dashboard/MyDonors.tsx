@@ -7,6 +7,8 @@ export function MyDonors() {
       title="My Donors"
       cacheKeyPrefix="my-donors"
       load={donorService.searchMine}
+      showCreateActions
+      ownershipScope="mine"
     />
   )
 }

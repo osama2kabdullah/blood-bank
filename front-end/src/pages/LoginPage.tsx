@@ -4,6 +4,7 @@ import { authService } from '@services/api'
 import { PageShell } from '@components/layout'
 import { Button, Card, CardTitle, CardSubtitle } from '@components/ui'
 import { useDocumentTitle } from '@hooks/useDocumentTitle'
+import { useSeoMeta } from '@hooks/useSeoMeta'
 import '@styles/components/form.css'
 import '@styles/pages/auth.css'
 
@@ -22,6 +23,11 @@ function getErrorMessage(error: unknown) {
 
 export default function LoginPage() {
   useDocumentTitle('Login')
+  useSeoMeta({
+    title: 'Login',
+    description: 'Login to Blood Bank Bangaldesh to manage donors and your account.',
+    noIndex: true,
+  })
   const navigate = useNavigate()
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')

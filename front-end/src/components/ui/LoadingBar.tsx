@@ -1,8 +1,9 @@
 import '@/styles/components/common.css'
-import { useAppStore } from '@store/appStore'
+import { useNavigation } from 'react-router-dom'
 
 export function LoadingBar() {
-  const isNavigating = useAppStore((s) => s.isNavigating)
+  const navigation = useNavigation()
+  const isNavigating = navigation.state !== 'idle'
   if (!isNavigating) return null
   return <div className="loading-bar" aria-hidden="true" />
 }

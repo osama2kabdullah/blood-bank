@@ -16,9 +16,9 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'robots.txt'],
         manifest: {
-          name: 'CF React Boilerplate',
-          short_name: 'CFReact',
-          description: 'Production-grade React app for Cloudflare Pages',
+          name: 'Blood Bank Bangaldesh',
+          short_name: 'BloodBankBD',
+          description: 'Find blood donors quickly across Bangladesh with Blood Bank Bangaldesh.',
           theme_color: '#0f62fe',
           background_color: '#f4f4f4',
           display: 'standalone',

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
+import { BRAND_NAME } from '@utils/brand'
 
-const APP_NAME = 'CF React'
+const APP_NAME = BRAND_NAME
 
 export function useDocumentTitle(title?: string) {
   useEffect(() => {

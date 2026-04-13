@@ -338,8 +338,8 @@ async function myDonorsHandler(request, env, ctx, origin, allowedOrigin) {
   const limit  = 10;
   const offset = (page - 1) * limit;
 
-  const conditions   = ["added_by_user_id = ?"];
-  const filterParams = [userData.userId];
+  const conditions   = ["(added_by_user_id = ? OR claimed_by_user_id = ?)"];
+  const filterParams = [userData.userId, userData.userId];
 
   if (bloodFilter)    { conditions.push("blood_group = ?");             filterParams.push(bloodFilter); }
   if (locationFilter) { conditions.push("location = ? COLLATE NOCASE"); filterParams.push(locationFilter); }

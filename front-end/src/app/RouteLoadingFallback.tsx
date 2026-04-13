@@ -1,21 +1,23 @@
-import { SkeletonCard } from '@components/ui'
+import { Spinner } from '@components/ui'
 
 export function RouteLoadingFallback() {
   return (
     <div
       style={{
-        padding: 'var(--cds-spacing-09) var(--cds-spacing-07)',
-        maxWidth: 'var(--container-lg)',
-        margin: '0 auto',
+        minHeight: '50vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 'var(--cds-spacing-04)',
+        padding: 'var(--cds-spacing-09)',
+        color: 'var(--cds-text-02)',
       }}
+      role="status"
+      aria-live="polite"
     >
-      <div style={{ height: '2rem', width: '40%', marginBottom: 'var(--cds-spacing-07)' }}
-           className="skeleton" />
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <SkeletonCard key={i} />
-        ))}
-      </div>
+      <Spinner size="lg" />
+      <p style={{ margin: 0 }}>Loading page...</p>
     </div>
   )
 }

@@ -122,6 +122,20 @@ export function useFetch<T>(
 }
 
 export function invalidateCache(key?: string) {
-  if (key) cache.delete(key)
-  else cache.clear()
+  if (key) {
+    cache.delete(key)
+    inFlight.delete(key)
+  } else {
+    cache.clear()
+    inFlight.clear()
+  }
+}
+
+export function invalidateCacheByPrefix(prefix: string) {
+  for (const key of cache.keys()) {
+    if (key.startsWith(prefix)) cache.delete(key)
+  }
+  for (const key of inFlight.keys()) {
+    if (key.startsWith(prefix)) inFlight.delete(key)
+  }
 }

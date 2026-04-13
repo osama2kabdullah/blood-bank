@@ -1,4 +1,6 @@
 export function Footer() {
+  const year = new Date().getFullYear()
+
   return (
     <footer
       style={{
@@ -11,7 +13,19 @@ export function Footer() {
         color: 'var(--cds-text-02)',
       }}
     >
-      <p>❤️ Developed by <a href="https://www.linkedin.com/in/md-abdullah-9121b5228/" target="_blank" rel="noopener noreferrer">Osama Abdullah</a></p>
+      <p>
+        {year} Blood Bank Bangaldesh
+      </p>
+      <p>
+        Developed by{' '}
+        <a
+          href="https://www.linkedin.com/in/md-abdullah-9121b5228"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Osama Abdullah
+        </a>
+      </p>
     </footer>
   )
 }

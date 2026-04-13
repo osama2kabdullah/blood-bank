@@ -1,6 +1,7 @@
 export { Button } from './Button'
 export { Card, CardHeader, CardTitle, CardSubtitle } from './Card'
 export { LoadingBar } from './LoadingBar'
+export { Modal } from './Modal'
 export { Notification } from './Notification'
 export { RadioGroup } from './radio-group'
 export { Selector } from './selector'

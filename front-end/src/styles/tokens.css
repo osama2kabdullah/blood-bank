@@ -5,15 +5,15 @@
 :root {
   /* === COLOR TOKENS === */
   /* Interactive */
-  --cds-interactive-01: #0f62fe;
+  --cds-interactive-01: #005f7b;
   --cds-interactive-02: #393939;
-  --cds-interactive-03: #0f62fe;
-  --cds-interactive-04: #0f62fe;
+  --cds-interactive-03: #005f7b;
+  --cds-interactive-04: #005f7b;
 
   /* Brand */
-  --cds-brand-01: #0f62fe;
+  --cds-brand-01: #005f7b;
   --cds-brand-02: #393939;
-  --cds-brand-03: #0f62fe;
+  --cds-brand-03: #005f7b;
 
   /* UI */
   --cds-ui-background: #f4f4f4;
@@ -30,8 +30,8 @@
   --cds-text-04: #ffffff;
   --cds-text-05: #6f6f6f;
   --cds-text-error: #da1e28;
-  --cds-text-on-color: #ffffff;
-  --cds-text-on-color-disabled: rgba(255,255,255,0.25);
+  --cds-text-on-color: #cce8f0;
+  --cds-text-on-color-disabled: rgba(204,232,240,0.35);
   --cds-text-placeholder: #a8a8a8;
   --cds-text-disabled: rgba(22,22,22,0.25);
 
@@ -42,15 +42,15 @@
   --cds-icon-on-color: #ffffff;
 
   /* Link */
-  --cds-link-01: #0f62fe;
-  --cds-link-02: #0043ce;
+  --cds-link-01: #005f7b;
+  --cds-link-02: #004e65;
   --cds-link-visited: #8a3ffc;
 
   /* Support */
   --cds-support-01: #da1e28;
   --cds-support-02: #198038;
   --cds-support-03: #f1c21b;
-  --cds-support-04: #0043ce;
+  --cds-support-04: #005f7b;
 
   /* Overlay */
   --cds-overlay-01: rgba(22,22,22,0.5);
@@ -65,8 +65,8 @@
   --cds-inverse-focus-ui: #ffffff;
 
   /* Hover */
-  --cds-hover-primary: #0353e9;
-  --cds-hover-primary-text: #0043ce;
+  --cds-hover-primary: #004e65;
+  --cds-hover-primary-text: #004e65;
   --cds-hover-secondary: #4c4c4c;
   --cds-hover-tertiary: #0353e9;
   --cds-hover-ui: #e5e5e5;
@@ -76,10 +76,10 @@
   --cds-hover-row: #e5e5e5;
 
   /* Focus */
-  --cds-focus: #0f62fe;
+  --cds-focus: #005f7b;
 
   /* Active */
-  --cds-active-primary: #002d9c;
+  --cds-active-primary: #003c4d;
   --cds-active-secondary: #6f6f6f;
   --cds-active-tertiary: #002d9c;
   --cds-active-ui: #c6c6c6;
@@ -99,7 +99,7 @@
   --cds-disabled-03: #8d8d8d;
 
   /* Highlight */
-  --cds-highlight: #d0e2ff;
+  --cds-highlight: #cce8f0;
 
   /* Skeleton */
   --cds-skeleton-01: #e5e5e5;
@@ -258,26 +258,26 @@
   --cds-icon-02: #c6c6c6;
   --cds-icon-03: #ffffff;
 
-  --cds-interactive-01: #4589ff;
+  --cds-interactive-01: #005f7b;
   --cds-interactive-02: #6f6f6f;
   --cds-interactive-03: #ffffff;
-  --cds-interactive-04: #4589ff;
+  --cds-interactive-04: #005f7b;
 
-  --cds-link-01: #78a9ff;
-  --cds-link-02: #a6c8ff;
+  --cds-link-01: #5ca8bf;
+  --cds-link-02: #8fc8d8;
 
   --cds-support-01: #ff8389;
   --cds-support-02: #42be65;
   --cds-support-03: #f1c21b;
-  --cds-support-04: #4589ff;
+  --cds-support-04: #5ca8bf;
 
-  --cds-hover-primary: #0353e9;
+  --cds-hover-primary: #00708f;
   --cds-hover-secondary: #606060;
   --cds-hover-ui: #353535;
   --cds-hover-row: #353535;
   --cds-hover-selected-ui: #4c4c4c;
 
-  --cds-active-primary: #002d9c;
+  --cds-active-primary: #004e65;
   --cds-active-secondary: #8d8d8d;
   --cds-active-ui: #525252;
 
@@ -290,7 +290,7 @@
   --cds-skeleton-01: #353535;
   --cds-skeleton-02: #525252;
 
-  --cds-highlight: #002d9c;
+  --cds-highlight: #003c4d;
   --cds-overlay-01: rgba(22,22,22,0.7);
 
   --cds-focus: #ffffff;

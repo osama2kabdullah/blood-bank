@@ -30,7 +30,7 @@
 
 .btn--primary {
   background-color: var(--cds-interactive-01);
-  color: var(--cds-text-04);
+  color: var(--cds-text-on-color);
   border-color: var(--cds-interactive-01);
 }
 .btn--primary:hover  { background-color: var(--cds-hover-primary); border-color: var(--cds-hover-primary); }
@@ -51,7 +51,7 @@
 }
 .btn--tertiary:hover {
   background-color: var(--cds-interactive-01);
-  color: var(--cds-text-04);
+  color: var(--cds-text-on-color);
 }
 
 .btn--ghost {
@@ -85,7 +85,7 @@
 a.btn:hover {
   text-decoration: none;
 }
-a.btn--primary:visited  { color: var(--cds-text-04); }
+a.btn--primary:visited  { color: var(--cds-text-on-color); }
 a.btn--secondary:visited { color: var(--cds-text-04); }
 a.btn--tertiary:visited  { color: var(--cds-interactive-01); }
 a.btn--ghost:visited     { color: var(--cds-interactive-01); }
