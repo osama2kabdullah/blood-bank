@@ -68,36 +68,6 @@
   gap: var(--cds-spacing-05);
 }
 
-/* Donor info */
-.donor-info-card {
-  max-width: 40rem;
-  margin-bottom: var(--cds-spacing-06);
-}
-
-.donor-info-card__row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-block: var(--cds-spacing-04);
-  border-bottom: 1px solid var(--cds-ui-03);
-}
-
-.donor-info-card__row:last-child {
-  border-bottom: none;
-}
-
-.donor-info-card__label {
-  font-size: var(--cds-label-01-font-size);
-  color: var(--cds-text-02);
-  letter-spacing: var(--cds-label-01-letter-spacing);
-}
-
-.donor-info-card__value {
-  font-size: var(--cds-body-short-01-font-size);
-  color: var(--cds-text-01);
-  font-weight: 500;
-}
-
 /* Danger zone */
 .danger-zone {
   max-width: 40rem;

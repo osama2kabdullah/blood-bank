@@ -73,17 +73,36 @@ export const authService = {
 }
 
 /* ── Donor service ── */
+function buildDonorQuery(params: {
+  blood_group?: string
+  location?: string | null
+  page?: number
+}) {
+  const query = new URLSearchParams()
+  if (params.blood_group && params.blood_group !== 'all') query.set('blood_group', params.blood_group)
+  if (params.location) query.set('location', params.location)
+  if (params.page && params.page > 1) query.set('page', String(params.page))
+  return query
+}
+
 export const donorService = {
   search: (params: {
     blood_group?: string
     location?: string | null
     page?: number
   }) => {
-    const query = new URLSearchParams()
-    if (params.blood_group && params.blood_group !== 'all') query.set('blood_group', params.blood_group)
-    if (params.location) query.set('location', params.location)
-    if (params.page && params.page > 1) query.set('page', String(params.page))
+    const query = buildDonorQuery(params)
     const path = query.toString() ? `/donors?${query}` : '/donors'
+    return http.get<DonorSearchResult>(path)
+  },
+
+  searchMine: (params: {
+    blood_group?: string
+    location?: string | null
+    page?: number
+  }) => {
+    const query = buildDonorQuery(params)
+    const path = query.toString() ? `/my-donors?${query}` : '/my-donors'
     return http.get<DonorSearchResult>(path)
   },
 

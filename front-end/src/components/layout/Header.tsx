@@ -1,10 +1,10 @@
 import '@/styles/components/header.css'
 import { useState, useEffect, useRef } from 'react'
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink, Link, useLocation } from 'react-router-dom'
 import { cn } from '@utils/cn'
 import logo from '@/assets/icons/logo.png'
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { to: '/', label: 'Home', end: true },
 ]
 
@@ -27,6 +27,7 @@ function getAuthState() {
 }
 
 export function Header() {
+  const location = useLocation()
   const [auth, setAuth] = useState(getAuthState)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -57,6 +58,14 @@ export function Header() {
 
   const closeDrawer = () => setIsMobileOpen(false)
 
+  const navItems = auth.isLoggedIn
+    ? [...BASE_NAV_ITEMS, { to: '/dashboard?tab=my-donors', label: 'My Donors', end: false }]
+    : BASE_NAV_ITEMS
+
+  const isMyDonorsActive =
+    location.pathname === '/dashboard' &&
+    (new URLSearchParams(location.search).get('tab') ?? 'my-donors') === 'my-donors'
+
   return (
     <header className="header">
       {/* Brand */}
@@ -67,13 +76,16 @@ export function Header() {
 
       {/* Desktop nav */}
       <nav className="header__nav" aria-label="Main navigation">
-        {NAV_ITEMS.map(({ to, label, end }) => (
+        {navItems.map(({ to, label, end }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
             className={({ isActive }) =>
-              cn('header__nav-item', isActive && 'header__nav-item--active')
+              cn(
+                'header__nav-item',
+                (label === 'My Donors' ? isMyDonorsActive : isActive) && 'header__nav-item--active',
+              )
             }
           >
             {label}
@@ -152,30 +164,22 @@ export function Header() {
             </div>
 
             <nav className="header__drawer-nav">
-              {NAV_ITEMS.map(({ to, label, end }) => (
+              {navItems.map(({ to, label, end }) => (
                 <NavLink
                   key={to}
                   to={to}
                   end={end}
                   className={({ isActive }) =>
-                    cn('header__drawer-item', isActive && 'header__drawer-item--active')
+                    cn(
+                      'header__drawer-item',
+                      (label === 'My Donors' ? isMyDonorsActive : isActive) && 'header__drawer-item--active',
+                    )
                   }
                   onClick={closeDrawer}
                 >
                   {label}
                 </NavLink>
               ))}
-              {auth.isLoggedIn && (
-                <NavLink
-                  to="/dashboard"
-                  className={({ isActive }) =>
-                    cn('header__drawer-item', isActive && 'header__drawer-item--active')
-                  }
-                  onClick={closeDrawer}
-                >
-                  Dashboard
-                </NavLink>
-              )}
             </nav>
 
             <div className="header__drawer-footer">

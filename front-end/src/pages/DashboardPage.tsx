@@ -1,10 +1,11 @@
 import '@/styles/pages/dashboard.css'
 import '@/styles/components/card.css'
-import { useState } from 'react'
+import { useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useDocumentTitle } from '@hooks/useDocumentTitle'
 import { PageShell } from '@components/layout'
 import AccountSettings from '@components/features/dashboard/AccountSettings'
-import { DonorInfo } from '@components/features/dashboard/DonorInfo'
+import { MyDonors } from '@components/features/dashboard/MyDonors'
 import { cn } from '@utils/cn'
 
 function getUser() {
@@ -14,26 +15,33 @@ function getUser() {
   } catch { return null }
 }
 
-function getDonor() {
-  try {
-    const raw = localStorage.getItem('authDonor')
-    return raw ? JSON.parse(raw) : null
-  } catch { return null }
-}
-
-type Tab = 'donor' | 'account'
+type Tab = 'myDonors' | 'account'
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'donor',   label: 'Donor Info' },
+  { id: 'myDonors', label: 'My Donors' },
   { id: 'account', label: 'Account Settings' },
 ]
 
+function getTabFromQuery(tab: string | null): Tab {
+  return tab === 'account' ? 'account' : 'myDonors'
+}
+
+function getTabQueryValue(tab: Tab): string {
+  return tab === 'account' ? 'account' : 'my-donors'
+}
+
 export default function DashboardPage() {
   useDocumentTitle('Dashboard')
-  const [activeTab, setActiveTab] = useState<Tab>('donor')
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const user = getUser()
-  const donor = getDonor()
+  const activeTab = getTabFromQuery(searchParams.get('tab'))
+
+  useEffect(() => {
+    if (!searchParams.get('tab')) {
+      setSearchParams({ tab: getTabQueryValue('myDonors') }, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   if (!user) {
     return (
@@ -51,13 +59,6 @@ export default function DashboardPage() {
     <PageShell>
       <div className="container">
         <div className="dashboard">
-
-          {/* Header */}
-          <div className="dashboard__header">
-            <h2 className="dashboard__title" style={{ fontWeight: 300 }}>Dashboard</h2>
-            <p className="dashboard__subtitle">Welcome back, {user.name}</p>
-          </div>
-
           {/* Tabs */}
           <div className="dashboard__tabs" role="tablist">
             {TABS.map((tab) => (
@@ -67,7 +68,7 @@ export default function DashboardPage() {
                 role="tab"
                 aria-selected={activeTab === tab.id}
                 className={cn('dashboard__tab', activeTab === tab.id && 'dashboard__tab--active')}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => setSearchParams({ tab: getTabQueryValue(tab.id) })}
               >
                 {tab.label}
               </button>
@@ -75,8 +76,8 @@ export default function DashboardPage() {
           </div>
 
           {/* Tab panels */}
-          {activeTab === 'donor' && (
-            <DonorInfo donor={donor} />
+          {activeTab === 'myDonors' && (
+            <MyDonors />
           )}
 
           {activeTab === 'account' && (
