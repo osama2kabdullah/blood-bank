@@ -43,6 +43,11 @@ export interface AuthResponse {
   donor: AuthDonor | null
 }
 
+export interface ApiMessageResponse {
+  success: boolean
+  message: string
+}
+
 /* ── Auth service ── */
 export const authService = {
   login: (payload: { phone: string; password: string }) =>
@@ -56,6 +61,15 @@ export const authService = {
     location: string
     last_donation?: string
   }) => http.post<AuthResponse>('/auth/donor/register-full', payload),
+
+  updateProfile: (payload: { name?: string; phone?: string }) =>
+    http.put<ApiMessageResponse>('/me', payload),
+
+  changePassword: (payload: { current_password: string; new_password: string }) =>
+    http.post<ApiMessageResponse>('/auth/change-password', payload),
+
+  deleteAccount: (payload: { password: string }) =>
+    http.delete<ApiMessageResponse>('/auth/delete-account', { body: payload }),
 }
 
 /* ── Donor service ── */

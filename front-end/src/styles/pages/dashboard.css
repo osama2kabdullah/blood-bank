@@ -1,0 +1,119 @@
+.dashboard__header {
+  margin-bottom: var(--cds-spacing-07);
+}
+
+.dashboard__title {
+  margin-bottom: var(--cds-spacing-02);
+}
+
+.dashboard__subtitle {
+  color: var(--cds-text-02);
+  font-size: var(--cds-body-short-01-font-size);
+}
+
+/* Tabs */
+.dashboard__tabs {
+  display: flex;
+  border-bottom: 1px solid var(--cds-ui-03);
+  margin-bottom: var(--cds-spacing-07);
+  gap: 0;
+}
+
+.dashboard__tab {
+  display: flex;
+  align-items: center;
+  gap: var(--cds-spacing-02);
+  height: 3rem;
+  padding-inline: var(--cds-spacing-06);
+  font-size: var(--cds-body-short-01-font-size);
+  color: var(--cds-text-02);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color var(--cds-duration-fast-01) var(--cds-standard),
+    border-color var(--cds-duration-fast-01) var(--cds-standard),
+    background-color var(--cds-duration-fast-01) var(--cds-standard);
+}
+
+.dashboard__tab:hover {
+  background-color: var(--cds-hover-ui);
+  color: var(--cds-text-01);
+}
+
+.dashboard__tab--active {
+  color: var(--cds-text-01);
+  border-bottom-color: var(--cds-interactive-01);
+}
+
+/* Section */
+.dashboard__section-title {
+  font-size: var(--cds-productive-heading-03-font-size);
+  font-weight: 400;
+}
+
+/* Account settings */
+.account-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-06);
+  max-width: 40rem;
+}
+
+.account-settings__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-05);
+}
+
+/* Donor info */
+.donor-info-card {
+  max-width: 40rem;
+  margin-bottom: var(--cds-spacing-06);
+}
+
+.donor-info-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-block: var(--cds-spacing-04);
+  border-bottom: 1px solid var(--cds-ui-03);
+}
+
+.donor-info-card__row:last-child {
+  border-bottom: none;
+}
+
+.donor-info-card__label {
+  font-size: var(--cds-label-01-font-size);
+  color: var(--cds-text-02);
+  letter-spacing: var(--cds-label-01-letter-spacing);
+}
+
+.donor-info-card__value {
+  font-size: var(--cds-body-short-01-font-size);
+  color: var(--cds-text-01);
+  font-weight: 500;
+}
+
+/* Danger zone */
+.danger-zone {
+  max-width: 40rem;
+  border: 1px solid var(--cds-support-01);
+  padding: var(--cds-spacing-06);
+}
+
+.danger-zone__title {
+  font-size: var(--cds-body-short-01-font-size);
+  font-weight: 600;
+  color: var(--cds-support-01);
+  margin-bottom: var(--cds-spacing-03);
+}
+
+.danger-zone__desc {
+  font-size: var(--cds-body-short-01-font-size);
+  color: var(--cds-text-02);
+  margin-bottom: var(--cds-spacing-05);
+}

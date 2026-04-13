@@ -79,9 +79,10 @@
 /* === NOTIFICATION === */
 .notification {
   display: flex;
-  gap: var(--cds-spacing-05);
-  padding: var(--cds-spacing-05);
+  gap: var(--cds-spacing-03);
+  padding: var(--cds-spacing-03) var(--cds-spacing-04);
   border-left: 3px solid;
+  align-items: center;
 }
 
 .notification--info    { background: var(--cds-notification-info-bg);    border-color: var(--cds-support-04); }
@@ -90,7 +91,7 @@
 .notification--error   { background: var(--cds-notification-error-bg);   border-color: var(--cds-support-01); }
 
 .notification__title   { font-weight: 600; font-size: var(--cds-body-short-01-font-size); }
-.notification__message { font-size: var(--cds-body-short-01-font-size); margin-top: var(--cds-spacing-02); color: var(--cds-text-02); }
+.notification__message { font-size: var(--cds-body-short-01-font-size); color: var(--cds-text-02); }
 
 /* === PROGRESS === */
 .progress {

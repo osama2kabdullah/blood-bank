@@ -51,6 +51,11 @@ async function request<T>(
   const timeoutId = setTimeout(() => controller.abort(), timeout)
   const combinedSignal = signal ?? controller.signal
 
+  const authToken = typeof window !== 'undefined' ? window.localStorage.getItem('authToken') : null
+  if (authToken && !headers.Authorization) {
+    headers.Authorization = `Bearer ${authToken}`
+  }
+
   const url = path.startsWith('http') ? path : `${env.apiBaseUrl}${path}`
 
   try {
@@ -100,6 +105,6 @@ export const http = {
     request<T>(path, { ...opts, method: 'PUT', body }),
   patch: <T>(path: string, body?: unknown, opts?: Omit<RequestOptions, 'method'>) =>
     request<T>(path, { ...opts, method: 'PATCH', body }),
-  delete: <T>(path: string, opts?: Omit<RequestOptions, 'method' | 'body'>) =>
+  delete: <T>(path: string, opts?: Omit<RequestOptions, 'method'>) =>
     request<T>(path, { ...opts, method: 'DELETE' }),
 }

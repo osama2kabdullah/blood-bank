@@ -12,7 +12,6 @@ import { RouteLoadingFallback } from './RouteLoadingFallback'
 /* Lazy page imports — each is a separate chunk */
 const HomePage       = lazy(() => import('@pages/HomePage'))
 const DashboardPage  = lazy(() => import('@pages/DashboardPage'))
-const SettingsPage   = lazy(() => import('@pages/SettingsPage'))
 const LoginPage      = lazy(() => import('@pages/LoginPage'))
 const RegisterPage   = lazy(() => import('@pages/RegisterPage'))
 const NotFoundPage   = lazy(() => import('@pages/NotFoundPage'))
@@ -37,7 +36,6 @@ export const router = createBrowserRouter([
     children: [
       { index: true,        element: <HomePage /> },
       { path: 'dashboard',  element: <DashboardPage /> },
-      { path: 'settings',   element: <SettingsPage /> },
       { path: 'login',      element: <LoginPage /> },
       { path: 'register',   element: <RegisterPage /> },
       { path: '*',          element: <NotFoundPage /> },

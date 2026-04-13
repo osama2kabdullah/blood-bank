@@ -100,9 +100,6 @@ export function Header() {
                 <Link to="/dashboard" className="header__dropdown-item" onClick={() => setIsMenuOpen(false)}>
                   Dashboard
                 </Link>
-                <Link to="/settings" className="header__dropdown-item" onClick={() => setIsMenuOpen(false)}>
-                  Settings
-                </Link>
                 <hr className="header__dropdown-divider" />
                 <button type="button" className="header__dropdown-item header__dropdown-item--danger" onClick={handleLogout}>
                   Logout
@@ -184,9 +181,6 @@ export function Header() {
             <div className="header__drawer-footer">
               {auth.isLoggedIn ? (
                 <>
-                  <Link to="/settings" className="header__drawer-item" onClick={closeDrawer}>
-                    Settings
-                  </Link>
                   <button type="button" className="header__drawer-item header__drawer-item--danger" onClick={handleLogout}>
                     Logout
                   </button>
