@@ -41,8 +41,8 @@ function resolveTheme(theme: Theme): 'light' | 'dark' {
 
 export const useAppStore = create<AppState>((set, get) => ({
   /* Theme */
-  theme: storage.get<Theme>('theme', 'system'),
-  resolvedTheme: resolveTheme(storage.get<Theme>('theme', 'system')),
+  theme: storage.get<Theme>('theme', 'light'),
+  resolvedTheme: resolveTheme(storage.get<Theme>('theme', 'light')),
   setTheme: (theme) => {
     const resolved = resolveTheme(theme)
     document.documentElement.setAttribute('data-theme', resolved)

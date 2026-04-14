@@ -87,6 +87,26 @@ function buildDonorQuery(params: {
   return query
 }
 
+function toNumber(value: unknown, fallback: number) {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : fallback
+}
+
+function normalizeDonorSearchResult(payload: unknown): DonorSearchResult {
+  const source = (payload && typeof payload === 'object' ? payload : {}) as Record<string, unknown>
+  const list = Array.isArray(payload) ? payload : source.data
+
+  return {
+    page: toNumber(source.page, 1),
+    limit: toNumber(source.limit, 10),
+    total: toNumber(source.total, Array.isArray(list) ? list.length : 0),
+    total_pages: Math.max(1, toNumber(source.total_pages, 1)),
+    has_next: Boolean(source.has_next),
+    has_prev: Boolean(source.has_prev),
+    data: Array.isArray(list) ? (list as Donor[]) : [],
+  }
+}
+
 export const donorService = {
   search: (params: {
     blood_group?: string
@@ -95,7 +115,10 @@ export const donorService = {
   }) => {
     const query = buildDonorQuery(params)
     const path = query.toString() ? `/donors?${query}` : '/donors'
-    return http.get<DonorSearchResult>(path)
+    return http.get<unknown>(path).then((response) => ({
+      ...response,
+      data: normalizeDonorSearchResult(response.data),
+    }))
   },
 
   searchMine: (params: {
@@ -105,7 +128,10 @@ export const donorService = {
   }) => {
     const query = buildDonorQuery(params)
     const path = query.toString() ? `/my-donors?${query}` : '/my-donors'
-    return http.get<DonorSearchResult>(path)
+    return http.get<unknown>(path).then((response) => ({
+      ...response,
+      data: normalizeDonorSearchResult(response.data),
+    }))
   },
 
   add: (payload: {
