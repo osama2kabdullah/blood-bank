@@ -1,120 +1,48 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <script src="./static/js/auth-guard.js"></script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blood Bank Shiromoni</title>
-  <meta name="description" content="Find verified blood donors by blood group and location in Bangladesh. Blood Bank Shiromoni helps people quickly connect with available donors.">
-  <meta name="keywords" content="blood donor, blood bank, Bangladesh blood donor, donor search, emergency blood">
-  <meta name="author" content="Blood Bank Shiromoni">
-  <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#b6002f">
-  <link rel="canonical" href="/index.html">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Blood Bank Shiromoni">
-  <meta property="og:description" content="Search blood donors by blood group and district in Bangladesh.">
-  <meta property="og:url" content="/index.html">
-  <meta property="og:image" content="./static/images/logo.png">
-  <meta property="og:site_name" content="Blood Bank Shiromoni">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Blood Bank Shiromoni">
-  <meta name="twitter:description" content="Search blood donors by blood group and district in Bangladesh.">
-  <meta name="twitter:image" content="./static/images/logo.png">
-  <link rel="icon" type="image/x-icon" href="./static/images/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="./static/images/favicon-32x32.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="./static/images/apple-touch-icon.png">
-  <link rel="stylesheet" href="./static/css/style.css">
-</head>
-<body>
-  <header>
-    <div class="header-content container">
-      <div class="logo">
-        <a href="index.html">
-          <img src="./static/images/logo.png" alt="Blood Bank Shiromoni Logo">
-        </a>
-      </div>
-      <div class="header-right-side">
-        <div class="nav-links">
-          <a href="index.html" class="nav-link">Home</a>
-        </div>
-        <a class="action-btn"></a>
-        <button type="button" class="hamburger-menu" aria-label="Toggle mobile menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
-      <div class="mobile-menu" id="mobileMenu">
-        <a href="index.html">Home</a>
-      </div>
-    </div>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Blood Bank Bangaldesh helps people quickly find blood donors across Bangladesh." />
+    <meta name="keywords" content="blood donor, blood bank, Bangladesh, donor search, emergency blood" />
+    <meta name="author" content="Blood Bank Bangaldesh" />
+    <meta name="robots" content="index, follow" />
+    <meta name="application-name" content="Blood Bank Bangaldesh" />
+    <meta name="theme-color" content="#0f62fe" />
+    <meta name="color-scheme" content="light dark" />
 
-  <main>
-    <section class="page-hero">
-      <div class="container">
-        <form id="donor-filter-form">
-          <div class="form-row">
-            <div class="form-field">
-              <label for="blood_group">Blood Group</label>
-              <div class="radio-group">
-                <label><input type="radio" name="blood_group" value="" checked> All</label>
-                <label><input type="radio" name="blood_group" value="A+"> A+</label>
-                <label><input type="radio" name="blood_group" value="A-"> A-</label>
-                <label><input type="radio" name="blood_group" value="B+"> B+</label>
-                <label><input type="radio" name="blood_group" value="B-"> B-</label>
-                <label><input type="radio" name="blood_group" value="AB+"> AB+</label>
-                <label><input type="radio" name="blood_group" value="AB-"> AB-</label>
-                <label><input type="radio" name="blood_group" value="O+"> O+</label>
-                <label><input type="radio" name="blood_group" value="O-"> O-</label>
-              </div>
-            </div>
-            <div class="form-field">
-              <label for="location" style="margin-bottom: 8px;">Location</label>
-              <label for="location" style="position: relative; margin-bottom: 10px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="search-icon" viewBox="0 0 16 16">
-                  <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-                </svg>
-                <input type="search" autocomplete="off" id="location" name="location" placeholder="Rajshahi, Dhaka, etc.">
-              </label>
-            </div>
-          </div>
-          <button style="max-width: 100px;margin-top: 15px;" type="submit" class="btn-secondary btn-secondary-outlined">Search</button>
-        </form>
-      </div>
-    </section>
+    <!-- Open Graph -->
+    <meta property="og:title" content="Blood Bank Bangaldesh" />
+    <meta property="og:description" content="Blood Bank Bangaldesh helps people quickly find blood donors across Bangladesh." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Blood Bank Bangaldesh" />
+    <meta property="og:locale" content="en_BD" />
+    <meta property="og:image" content="/icons/icon-512.png" />
 
-    <section class="container">
-      
-      <div class="result-summery">
-        <div class="perams">
-          <p>Blood Group: <span class="blood_group"></span></p>
-          <p>Location: <span class="location-name"></span></p>
-        </div>
-        <p class="result-count">
-          Showing <span class="from"></span> - <span class="to"></span> of <span class="total"></span>
-        </p>
-      </div>
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Blood Bank Bangaldesh" />
+    <meta name="twitter:description" content="Blood Bank Bangaldesh helps people quickly find blood donors across Bangladesh." />
+    <meta name="twitter:image" content="/icons/icon-512.png" />
 
-      <div class="donor-list" id="donorList">
-        <div id="sectionLoader" class="active">
-          <div class="loader-spinner"></div>
-        </div>
-      </div>
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
 
-      <div class="pagination"></div>
+    <!-- Preconnect for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    </section>
-  </main>
+    <!-- Critical inline CSS to prevent FOUC (flash of unstyled content) -->
+    <style>
+      :root { background-color: #f4f4f4; }
+      [data-theme="dark"] { background-color: #161616; }
+      #root { min-height: 100vh; }
+    </style>
 
-  <footer>
-    <div class="container">
-      <p>❤️ Developed by <a href="https://www.linkedin.com/in/md-abdullah-9121b5228/" target="_blank" rel="noopener noreferrer">Osama Abdullah</a></p>
-    </div>
-  </footer>
-
-  <script src="./static/js/script.js"></script>
-  <script defer src="./static/js/donors.js"></script>
-</body>
+    <title>Blood Bank Bangaldesh</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

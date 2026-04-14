@@ -182,7 +182,7 @@ async function loginHandler(request, env, ctx, origin, allowedOrigin) {
       "SELECT * FROM users WHERE phone = ?"
     ).bind(phone).first();
 
-    if (!user) return jsonError("User not found", 404, origin, allowedOrigin);
+    if (!user) return jsonError("Invalid email or password", 401, origin, allowedOrigin);
 
     const isValid = await verifyPassword(password, user.password);
     if (!isValid) return jsonError("Invalid credentials", 401, origin, allowedOrigin);
@@ -338,8 +338,8 @@ async function myDonorsHandler(request, env, ctx, origin, allowedOrigin) {
   const limit  = 10;
   const offset = (page - 1) * limit;
 
-  const conditions   = ["added_by_user_id = ?"];
-  const filterParams = [userData.userId];
+  const conditions   = ["(added_by_user_id = ? OR claimed_by_user_id = ?)"];
+  const filterParams = [userData.userId, userData.userId];
 
   if (bloodFilter)    { conditions.push("blood_group = ?");             filterParams.push(bloodFilter); }
   if (locationFilter) { conditions.push("location = ? COLLATE NOCASE"); filterParams.push(locationFilter); }
@@ -444,69 +444,6 @@ async function registerFullHandler(request, env, ctx, origin, allowedOrigin) {
     if (err.message.includes("UNIQUE"))
       return jsonError("Phone already registered", 400, origin, allowedOrigin);
     return jsonError("Registration failed", 500, origin, allowedOrigin, err.message);
-  }
-}
-
-routes["/user-donation-info"] = infoHandler;
-async function infoHandler(request, env, ctx, origin, allowedOrigin) {
-  if (request.method !== "GET" && request.method !== "PUT") {
-    return jsonError("Method not allowed", 405, origin, allowedOrigin);
-  }
-
-  const authHeader = request.headers.get("Authorization") || "";
-  const token = authHeader.replace("Bearer ", "");
-  const userData = await verifyToken(token, env.JWT_SECRET);
-  if (!userData) return jsonError("Unauthorized", 401, origin, allowedOrigin);
-
-  try {
-    if (request.method === "GET") {
-      const user = await env.DB.prepare(
-        "SELECT id, name, phone FROM users WHERE id = ?"
-      ).bind(userData.userId).first();
-
-      if (!user) return jsonError("User not found", 404, origin, allowedOrigin);
-
-      const donor = await env.DB.prepare(
-        "SELECT blood_group, location, last_donation FROM donors WHERE claimed_by_user_id = ?"
-      ).bind(userData.userId).first();
-
-      return jsonResponse({
-        success: true,
-        donor: donor || null
-      });
-    }
-
-    if (request.method === "PUT") {
-      const body = await request.json();
-      const { blood_group, location, last_donation } = body;
-
-      const updates = [];
-      const params = [];
-
-      if (blood_group !== undefined) {
-        updates.push("blood_group = ?");
-        params.push(blood_group.toUpperCase());
-      }
-      if (location !== undefined) {
-        updates.push("location = ?");
-        params.push(location);
-      }
-      if (last_donation !== undefined) {
-        updates.push("last_donation = ?");
-        params.push(last_donation);
-      }
-
-      if (updates.length === 0) return jsonError("No fields to update", 400, origin, allowedOrigin);
-
-      params.push(userData.userId);
-      const updateQuery = `UPDATE donors SET ${updates.join(", ")} WHERE claimed_by_user_id = ?`;
-
-      await env.DB.prepare(updateQuery).bind(...params).run();
-
-      return jsonResponse({ success: true, message: "Info updated successfully" });
-    }
-  } catch (err) {
-    return jsonError("Failed to process request", 500, origin, allowedOrigin, err.message);
   }
 }
 

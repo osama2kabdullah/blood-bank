@@ -1,0 +1,25 @@
+.pagination-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-block: var(--cds-spacing-07);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--cds-spacing-05);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.pagination-info {
+  font-size: var(--cds-body-short-01-font-size);
+  color: var(--cds-text-02);
+  white-space: nowrap;
+}
+
+.pagination-info strong {
+  color: var(--cds-text-01);
+  font-weight: 600;
+}

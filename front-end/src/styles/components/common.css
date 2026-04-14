@@ -1,0 +1,134 @@
+/* === BREADCRUMB === */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--cds-spacing-03);
+  font-size: var(--cds-label-01-font-size);
+  color: var(--cds-text-02);
+  margin-bottom: var(--cds-spacing-05);
+}
+
+.breadcrumb__separator { color: var(--cds-text-03); }
+.breadcrumb__link { color: var(--cds-link-01); }
+.breadcrumb__link:hover { text-decoration: underline; }
+.breadcrumb__current { color: var(--cds-text-01); }
+
+/* === TAG === */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 1.5rem;
+  padding: 0 var(--cds-spacing-03);
+  font-size: var(--cds-label-01-font-size);
+  font-weight: 400;
+  letter-spacing: var(--cds-label-01-letter-spacing);
+  white-space: nowrap;
+}
+
+.tag--blue      { background-color: #d0e2ff; color: #0043ce; }
+.tag--cyan      { background-color: #bae6ff; color: #00539a; }
+.tag--teal      { background-color: #9ef0f0; color: #004144; }
+.tag--green     { background-color: #a7f0ba; color: #044317; }
+.tag--magenta   { background-color: #ffd6e8; color: #740937; }
+.tag--red       { background-color: #ffd7d9; color: #750e13; }
+.tag--purple    { background-color: #e8daff; color: #491d8b; }
+.tag--warm-gray { background-color: #f2efe9; color: #272525; }
+.tag--cool-gray { background-color: #dde1e6; color: #21272a; }
+
+/* === SPINNER === */
+.spinner {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--cds-ui-03);
+  border-top-color: var(--cds-interactive-01);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.spinner--sm { width: 1rem; height: 1rem; }
+.spinner--lg { width: 2.5rem; height: 2.5rem; border-width: 3px; }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === SKELETON === */
+.skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--cds-skeleton-01) 25%,
+    var(--cds-skeleton-02) 50%,
+    var(--cds-skeleton-01) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton--text  { height: 1rem; width: 100%; margin-bottom: var(--cds-spacing-03); }
+.skeleton--title { height: 1.5rem; width: 60%; margin-bottom: var(--cds-spacing-05); }
+.skeleton--btn   { height: 3rem; width: 8rem; }
+.skeleton--card  { height: 10rem; width: 100%; }
+
+/* === NOTIFICATION === */
+.notification {
+  display: flex;
+  gap: var(--cds-spacing-03);
+  padding: var(--cds-spacing-03) var(--cds-spacing-04);
+  border-left: 3px solid;
+  align-items: center;
+}
+
+.notification--info    { background: var(--cds-notification-info-bg);    border-color: var(--cds-support-04); }
+.notification--success { background: var(--cds-notification-success-bg); border-color: var(--cds-support-02); }
+.notification--warning { background: var(--cds-notification-warning-bg); border-color: var(--cds-support-03); }
+.notification--error   { background: var(--cds-notification-error-bg);   border-color: var(--cds-support-01); }
+
+.notification__title   { font-weight: 600; font-size: var(--cds-body-short-01-font-size); }
+.notification__message { font-size: var(--cds-body-short-01-font-size); color: var(--cds-text-02); }
+
+/* === PROGRESS === */
+.progress {
+  height: 0.5rem;
+  background: var(--cds-ui-03);
+  overflow: hidden;
+}
+
+.progress__bar {
+  height: 100%;
+  background: var(--cds-interactive-01);
+  transition: width var(--cds-duration-moderate-01) var(--cds-standard);
+}
+
+/* === LOADING BAR === */
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--cds-interactive-01);
+  z-index: 9999;
+  transform-origin: left center;
+  animation: loading-bar-progress 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-bar-progress {
+  0%   { transform: scaleX(0); opacity: 1; }
+  50%  { transform: scaleX(0.7); opacity: 1; }
+  90%  { transform: scaleX(0.95); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+/* === DIVIDER === */
+.divider {
+  border: none;
+  border-top: 1px solid var(--cds-ui-03);
+  margin-block: var(--cds-spacing-06);
+}

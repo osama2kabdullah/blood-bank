@@ -1,0 +1,36 @@
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--cds-ui-03);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--cds-body-short-01-font-size);
+}
+
+.table thead {
+  background-color: var(--cds-ui-02);
+}
+
+.table th {
+  padding: var(--cds-spacing-04) var(--cds-spacing-05);
+  text-align: left;
+  font-weight: 600;
+  font-size: var(--cds-label-01-font-size);
+  color: var(--cds-text-02);
+  letter-spacing: var(--cds-label-01-letter-spacing);
+  border-bottom: 1px solid var(--cds-ui-03);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--cds-spacing-04) var(--cds-spacing-05);
+  border-bottom: 1px solid var(--cds-ui-03);
+  color: var(--cds-text-01);
+  vertical-align: middle;
+}
+
+.table tbody tr:hover {
+  background-color: var(--cds-hover-row);
+}
